@@ -6,6 +6,7 @@ const RUN_SPEED = 25.0
 const WALK_SPEED = RUN_SPEED / 2
 const JUMP_IMPULSE = 6.0
 const LOCAL_PLAYER_BODY_TRANSPARENCY = 0.1
+const HOOK_POINT_SOUND = preload("res://Audio/impactSoft_heavy_000.ogg")
 
 
 @export var is_local_player: bool = false
@@ -20,14 +21,11 @@ var is_seeker: bool = false:
 var sensitivity: float = 0.01
 var pause_input: bool = false
 var move_speed := RUN_SPEED
-var yaw := 0.0:
-	set(x):
-		yaw = x
-		# TODO
-var pitch := 0.0:
-	set(x):
-		pitch = x
-		# TODO
+var yaw := 0.0
+var pitch := 0.0
+var slide_sound_playing := false
+var hooked := false
+var hook_point := Vector3.ZERO
 var flashlight: bool = false:
 	set(x):
 		%Flashlight.visible = x
@@ -64,9 +62,37 @@ func _input(event: InputEvent) -> void:
 
 
 @onready var hook_material = StandardMaterial3D.new()
-var hooked := false
-var hook_point := Vector3.ZERO
+var last_hooked := hooked
 func _physics_process(_delta: float) -> void:
+	if slide_sound_playing:
+		if not %Slide_Sound.playing:
+			%Slide_Sound.play()
+	
+	%Hook.mesh.clear_surfaces()
+	if hooked:
+		if is_local_player:
+			apply_central_force(
+				(hook_point - %Hook.global_position).normalized() *
+				move_speed
+			)
+		
+		%Hook.mesh.surface_begin(Mesh.PRIMITIVE_LINES, hook_material)
+		%Hook.mesh.surface_add_vertex(Vector3.ZERO)
+		%Hook.mesh.surface_add_vertex(to_local(hook_point).rotated(Vector3.UP, yaw))
+		%Hook.mesh.surface_end()
+		
+		if last_hooked != hooked:
+			var hook_point_sound := AudioStreamPlayer3D.new()
+			hook_point_sound.global_position = hook_point
+			hook_point_sound.stream = HOOK_POINT_SOUND
+			hook_point_sound.attenuation_model = AudioStreamPlayer3D.ATTENUATION_INVERSE_SQUARE_DISTANCE
+			hook_point_sound.autoplay = true
+			hook_point_sound.finished.connect(
+				func(): hook_point_sound.queue_free()
+			)
+			get_tree().root.add_child(hook_point_sound)
+	last_hooked = hooked
+	
 	if not is_local_player: return
 	
 	if global_position.y < 0.0:
@@ -110,7 +136,13 @@ func _physics_process(_delta: float) -> void:
 	
 	if Input.is_action_pressed("Slide"):
 		physics_material_override.friction = 0.0
-	else: physics_material_override.friction = 1.0
+		
+		if is_on_ground or is_at_wall:
+			slide_sound_playing = true
+		else: slide_sound_playing = false
+	else:
+		physics_material_override.friction = 1.0
+		slide_sound_playing = false
 	
 	if Input.is_action_pressed("Hook") and not hooked:
 		%Camera_Raycast.force_raycast_update()
@@ -118,18 +150,6 @@ func _physics_process(_delta: float) -> void:
 			hook_point = %Camera_Raycast.get_collision_point()
 			hooked = true
 	elif not Input.is_action_pressed("Hook"): hooked = false
-	
-	%Hook.mesh.clear_surfaces()
-	if hooked:
-		apply_central_force(
-			(hook_point - %Hook.global_position).normalized() *
-			move_speed
-		)
-		
-		%Hook.mesh.surface_begin(Mesh.PRIMITIVE_LINES, hook_material)
-		%Hook.mesh.surface_add_vertex(Vector3.ZERO)
-		%Hook.mesh.surface_add_vertex(to_local(hook_point).rotated(Vector3.UP, yaw))
-		%Hook.mesh.surface_end()
 	
 	if Input.is_action_just_pressed("Flashlight"):
 		flashlight = not flashlight
