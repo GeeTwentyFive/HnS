@@ -1,6 +1,7 @@
-[gd_scene load_steps=12 format=3 uid="uid://u5ynn5qp2oq2"]
+[gd_scene load_steps=13 format=3 uid="uid://u5ynn5qp2oq2"]
 
 [ext_resource type="Script" uid="uid://cankftc73niri" path="res://player.gd" id="1_xhfnw"]
+[ext_resource type="AudioStream" uid="uid://eo6elmu4k2j7" path="res://Audio/footstep_wood_001.ogg" id="2_kpjcp"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_xhfnw"]
 
@@ -104,6 +105,17 @@ monitorable = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.99, 0)
 shape = SubResource("CylinderShape3D_kpjcp")
 
+[node name="Footstep_Sound_Timer" type="Timer" parent="."]
+unique_name_in_owner = true
+wait_time = 0.2
+
+[node name="Footstep_Sound" type="AudioStreamPlayer3D" parent="Footstep_Sound_Timer"]
+unique_name_in_owner = true
+stream = ExtResource("2_kpjcp")
+attenuation_model = 1
+
 [node name="Slide_Sound" type="AudioStreamPlayer3D" parent="."]
 unique_name_in_owner = true
 attenuation_model = 1
+
+[connection signal="timeout" from="Footstep_Sound_Timer" to="." method="_on_footstep_sound_timer_timeout"]

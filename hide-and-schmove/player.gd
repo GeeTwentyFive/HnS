@@ -23,6 +23,7 @@ var pause_input: bool = false
 var move_speed := RUN_SPEED
 var yaw := 0.0
 var pitch := 0.0
+var footstep_sound_playing := false
 var slide_sound_playing := false
 var hooked := false
 var hook_point := Vector3.ZERO
@@ -64,6 +65,11 @@ func _input(event: InputEvent) -> void:
 @onready var hook_material = StandardMaterial3D.new()
 var last_hooked := hooked
 func _physics_process(_delta: float) -> void:
+	if footstep_sound_playing:
+		if %Footstep_Sound_Timer.is_stopped():
+			%Footstep_Sound_Timer.start()
+	else: %Footstep_Sound_Timer.stop()
+	
 	if slide_sound_playing:
 		if not %Slide_Sound.playing:
 			%Slide_Sound.play()
@@ -123,6 +129,11 @@ func _physics_process(_delta: float) -> void:
 			move_speed
 		)
 	
+	if is_on_ground and movement_direction and not slide_sound_playing:
+		footstep_sound_playing = true
+	if not is_on_ground or not movement_direction or slide_sound_playing:
+		footstep_sound_playing = false
+	
 	if Input.is_action_just_pressed("Jump"):
 		if is_on_ground:
 			if linear_velocity.y < 0.0:
@@ -153,3 +164,7 @@ func _physics_process(_delta: float) -> void:
 	
 	if Input.is_action_just_pressed("Flashlight"):
 		flashlight = not flashlight
+
+
+func _on_footstep_sound_timer_timeout() -> void:
+	%Footstep_Sound.play()
