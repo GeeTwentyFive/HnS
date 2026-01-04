@@ -1,0 +1,37 @@
+[gd_scene load_steps=2 format=3 uid="uid://d1vbnvnkmmkd5"]
+
+[ext_resource type="Script" uid="uid://rd518r7b0vke" path="res://game_manager.gd" id="1_p13vs"]
+
+[node name="GameManager" type="Node"]
+script = ExtResource("1_p13vs")
+
+[node name="Settings_Popup" type="PopupPanel" parent="."]
+unique_name_in_owner = true
+oversampling_override = 1.0
+initial_position = 2
+size = Vector2i(100, 101)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Settings_Popup"]
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 96.0
+offset_bottom = 97.0
+
+[node name="Label" type="Label" parent="Settings_Popup/VBoxContainer"]
+layout_mode = 2
+text = "Sensitivity"
+horizontal_alignment = 1
+
+[node name="Settings_Sensitivity" type="SpinBox" parent="Settings_Popup/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+step = -1.0
+allow_greater = true
+allow_lesser = true
+
+[node name="Exit_Button" type="Button" parent="Settings_Popup/VBoxContainer"]
+layout_mode = 2
+text = "Exit"
+
+[connection signal="value_changed" from="Settings_Popup/VBoxContainer/Settings_Sensitivity" to="." method="_on_settings_sensitivity_value_changed"]
+[connection signal="pressed" from="Settings_Popup/VBoxContainer/Exit_Button" to="." method="_on_exit_button_pressed"]

@@ -1,6 +1,8 @@
-[gd_scene load_steps=7 format=3 uid="uid://u5ynn5qp2oq2"]
+[gd_scene load_steps=10 format=3 uid="uid://u5ynn5qp2oq2"]
 
 [ext_resource type="Script" uid="uid://cankftc73niri" path="res://player.gd" id="1_xhfnw"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_xhfnw"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_0rwas"]
 
@@ -9,6 +11,7 @@ top_radius = 0.1
 height = 1.4
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kpjcp"]
+resource_local_to_scene = true
 albedo_color = Color(0, 0, 1, 1)
 
 [sub_resource type="SphereMesh" id="SphereMesh_kne1u"]
@@ -20,10 +23,19 @@ top_radius = 0.05
 bottom_radius = 0.05
 height = 0.5
 
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_xhfnw"]
+height = 0.1
+radius = 0.49
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_kpjcp"]
+height = 1.99
+radius = 0.6
+
 [node name="Player" type="RigidBody3D"]
 axis_lock_angular_x = true
 axis_lock_angular_y = true
 axis_lock_angular_z = true
+physics_material_override = SubResource("PhysicsMaterial_xhfnw")
 continuous_cd = true
 script = ExtResource("1_xhfnw")
 
@@ -32,11 +44,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 shape = SubResource("CylinderShape3D_0rwas")
 
 [node name="Body" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
 mesh = SubResource("CylinderMesh_xhfnw")
 surface_material_override/0 = SubResource("StandardMaterial3D_kpjcp")
 
 [node name="Head" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 0)
 mesh = SubResource("SphereMesh_kne1u")
 skeleton = NodePath("../CollisionShape3D")
@@ -46,6 +60,33 @@ fov = 90.0
 near = 0.01
 far = 10000.0
 
+[node name="Camera_Raycast" type="RayCast3D" parent="Head/Camera3D"]
+unique_name_in_owner = true
+target_position = Vector3(0, 0, -10000)
+
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Head/Camera3D"]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, -0.1)
 mesh = SubResource("CylinderMesh_e80uo")
+
+[node name="Flashlight" type="SpotLight3D" parent="Head/Camera3D/MeshInstance3D"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)
+visible = false
+shadow_enabled = true
+spot_range = 20.0
+spot_attenuation = 2.0
+
+[node name="Floor_Collider" type="Area3D" parent="."]
+unique_name_in_owner = true
+monitorable = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor_Collider"]
+shape = SubResource("CylinderShape3D_xhfnw")
+
+[node name="Wall_Collider" type="Area3D" parent="."]
+unique_name_in_owner = true
+monitorable = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Wall_Collider"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.99, 0)
+shape = SubResource("CylinderShape3D_kpjcp")
