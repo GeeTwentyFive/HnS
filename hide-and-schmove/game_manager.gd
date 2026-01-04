@@ -9,16 +9,33 @@ var settings: Dictionary = {
 }
 
 var hider_spawn := Vector3(0.0, 0.0, 0.0)
-var seeker_spawn := Vector3(0.0, 0.0, 0.0)
+var seeker_spawn := Vector3(0.0, 10.0, 0.0)
 
 var local_player: Player = null
 var remote_players: Array[Player] = []
 
 
 func _ready() -> void:
+	get_tree().paused = true
+	
+	var args := OS.get_cmdline_user_args()
+	if args.size() < 2:
+		print("USAGE: -- <SERVER_IP> <PLAYER_NAME> [PATH/TO/MAP.json]")
+		get_tree().quit()
+	
 	# TODO: Parse & validate CLI input
 	
-	# TODO: Load & validate map
+	# (if '[PATH/TO/MAP.json]' is set then you are host)
+	# TODO: If host: load map
+	
+	# TODO: Connect to server
+	
+	# TODO: If not host:
+		# - while no host: wait for host
+		# - if host["game_started"]: exit
+	
+	# TODO: If host: Set map_data -> map_loaded = true
+	# TODO: else: load map from host["map_data"] -> map_loaded = true
 	
 	# Generate user settings if they don't exist
 	if not FileAccess.file_exists(SETTINGS_PATH):
@@ -39,9 +56,24 @@ func _ready() -> void:
 			FileAccess.WRITE
 		).store_string(JSON.stringify(settings))
 	
-	# TODO: Spawn local player
+	local_player = Player.new()
+	local_player.is_local_player = true
+	local_player.sensitivity = settings["sensitivity"]
+	add_child(local_player)
+	
+	# TODO: If host:
+		# - Wait until everyone's map_loaded == true
+		# - clear map_data
+		# - game_started = true
+	# TODO: else: wait until host["game_started"]
 	
 	# TODO: Spawn remote players
+		# TODO: ^ .set_meta("net_id", sns.states.keys[x])
+	
+	get_tree().paused = false
+
+func _physics_process(_delta: float) -> void:
+	pass # TODO: Game management & networked state sync
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
