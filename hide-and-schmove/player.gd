@@ -18,20 +18,6 @@ var is_seeker: bool = false:
 var sensitivity: float = 0.01
 var pause_input: bool = false
 var move_speed := RUN_SPEED
-var slide := false:
-	set(x):
-		slide = x
-		if slide:
-			physics_material_override.friction = 0.0
-		else:
-			physics_material_override.friction = 1.0
-var walk := false:
-	set(x):
-		walk = x
-		if walk:
-			move_speed = WALK_SPEED
-		else:
-			move_speed = RUN_SPEED
 var yaw := 0.0:
 	set(x):
 		yaw = x
@@ -118,13 +104,9 @@ func _physics_process(_delta: float) -> void:
 				Vector3(movement_direction.x, JUMP_IMPULSE, movement_direction.y)
 			)
 	
-	if Input.is_action_pressed("Jump"):
-		slide = true
-	else: slide = false
-	
-	if Input.is_action_pressed("Walk"):
-		walk = true
-	else: walk = false
+	if Input.is_action_pressed("Slide"):
+		physics_material_override.friction = 0.0
+	else: physics_material_override.friction = 1.0
 	
 	if Input.is_action_just_pressed("Flashlight"):
 		flashlight = not flashlight
