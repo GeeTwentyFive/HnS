@@ -109,5 +109,12 @@ func _physics_process(_delta: float) -> void:
 		physics_material_override.friction = 0.0
 	else: physics_material_override.friction = 1.0
 	
+	%Hook.mesh.clear_surfaces()
+	if Input.is_action_pressed("Hook"):
+		%Hook.mesh.surface_begin(Mesh.PRIMITIVE_LINES, StandardMaterial3D.new())
+		%Hook.mesh.surface_add_vertex(Vector3.ZERO)
+		%Hook.mesh.surface_add_vertex(Vector3(0.0, 0.0, -2.0)) # TODO
+		%Hook.mesh.surface_end()
+	
 	if Input.is_action_just_pressed("Flashlight"):
 		flashlight = not flashlight

@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://u5ynn5qp2oq2"]
+[gd_scene load_steps=12 format=3 uid="uid://u5ynn5qp2oq2"]
 
 [ext_resource type="Script" uid="uid://cankftc73niri" path="res://player.gd" id="1_xhfnw"]
 
@@ -18,10 +18,18 @@ albedo_color = Color(0, 0, 1, 1)
 radius = 0.25
 height = 0.5
 
+[sub_resource type="Environment" id="Environment_xhfnw"]
+background_mode = 1
+background_energy_multiplier = 0.0
+ambient_light_source = 1
+reflected_light_source = 1
+
 [sub_resource type="CylinderMesh" id="CylinderMesh_e80uo"]
 top_radius = 0.05
 bottom_radius = 0.05
 height = 0.5
+
+[sub_resource type="ImmediateMesh" id="ImmediateMesh_xhfnw"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_xhfnw"]
 height = 0.1
@@ -56,6 +64,7 @@ mesh = SubResource("SphereMesh_kne1u")
 skeleton = NodePath("../../CollisionShape3D")
 
 [node name="Camera3D" type="Camera3D" parent="Body/Head"]
+environment = SubResource("Environment_xhfnw")
 fov = 90.0
 near = 0.01
 far = 10000.0
@@ -75,6 +84,10 @@ visible = false
 shadow_enabled = true
 spot_range = 20.0
 spot_attenuation = 2.0
+
+[node name="Hook" type="MeshInstance3D" parent="Body"]
+unique_name_in_owner = true
+mesh = SubResource("ImmediateMesh_xhfnw")
 
 [node name="Floor_Collider" type="Area3D" parent="."]
 unique_name_in_owner = true
