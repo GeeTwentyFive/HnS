@@ -23,6 +23,7 @@ var pause_input: bool = false
 var move_speed := RUN_SPEED
 var yaw := 0.0
 var pitch := 0.0
+var jumped := false
 var slide_sound_playing := false
 var hooked := false
 var hook_point := Vector3.ZERO
@@ -61,9 +62,14 @@ func _input(event: InputEvent) -> void:
 		%Head.rotate_object_local(Vector3.RIGHT, -pitch)
 
 
+var last_jumped := jumped
 @onready var hook_material = StandardMaterial3D.new()
 var last_hooked := hooked
 func _physics_process(_delta: float) -> void:
+	if jumped and not last_jumped:
+		%Jump_Sound.play()
+	last_jumped = jumped
+	
 	if slide_sound_playing:
 		if not %Slide_Sound.playing:
 			%Slide_Sound.play()
@@ -123,16 +129,19 @@ func _physics_process(_delta: float) -> void:
 			move_speed
 		)
 	
+	jumped = false
 	if Input.is_action_just_pressed("Jump"):
 		if is_on_ground:
 			if linear_velocity.y < 0.0:
 				linear_velocity.y = 0.0
 			apply_central_impulse(Vector3(0.0, JUMP_IMPULSE, 0.0))
+			jumped = true
 		
 		elif is_at_wall:
 			apply_central_impulse(
 				Vector3(movement_direction.x, JUMP_IMPULSE, movement_direction.y)
 			)
+			jumped = true
 	
 	if Input.is_action_pressed("Slide"):
 		physics_material_override.friction = 0.0

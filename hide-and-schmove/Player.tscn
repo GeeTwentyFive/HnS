@@ -1,6 +1,7 @@
-[gd_scene load_steps=12 format=3 uid="uid://u5ynn5qp2oq2"]
+[gd_scene load_steps=13 format=3 uid="uid://u5ynn5qp2oq2"]
 
 [ext_resource type="Script" uid="uid://cankftc73niri" path="res://player.gd" id="1_xhfnw"]
+[ext_resource type="AudioStream" uid="uid://bp1behgoo61r4" path="res://Audio/impactSoft_medium_000.ogg" id="2_kpjcp"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_xhfnw"]
 
@@ -103,6 +104,11 @@ monitorable = false
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Wall_Collider"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.99, 0)
 shape = SubResource("CylinderShape3D_kpjcp")
+
+[node name="Jump_Sound" type="AudioStreamPlayer3D" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("2_kpjcp")
+attenuation_model = 1
 
 [node name="Slide_Sound" type="AudioStreamPlayer3D" parent="."]
 unique_name_in_owner = true
