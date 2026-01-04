@@ -19,8 +19,8 @@ func _ready() -> void:
 	get_tree().paused = true
 	
 	var args := OS.get_cmdline_user_args()
-	if args.size() < 2:
-		print("USAGE: -- <SERVER_IP> <PLAYER_NAME> [PATH/TO/MAP.json]")
+	if args.is_empty():
+		print("USAGE: -- <SERVER_IP> [PATH/TO/MAP.json]")
 		get_tree().quit()
 	
 	# TODO: Parse & validate CLI input
