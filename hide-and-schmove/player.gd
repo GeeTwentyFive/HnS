@@ -7,7 +7,7 @@ const WALK_SPEED = RUN_SPEED / 2
 const JUMP_IMPULSE = 6.0
 
 
-var is_local_player: bool = false
+@export var is_local_player: bool = false
 var is_seeker: bool = false:
 	set(x):
 		is_seeker = x
@@ -55,19 +55,26 @@ func _ready() -> void:
 	Input.use_accumulated_input = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
+
 func _input(event: InputEvent) -> void:
 	if not is_local_player or pause_input: return
 	
 	if event is InputEventMouseMotion:
 		yaw += event.screen_relative.x * sensitivity
 		yaw = fmod(yaw, TAU)
-		transform.basis = Basis()
-		rotate_object_local(Vector3.UP, -yaw)
+		# ^ is set in integrate_forces
 		
 		pitch += event.screen_relative.y * sensitivity
 		pitch = clampf(pitch, -PI/2, PI/2)
 		%Head.transform.basis = Basis()
 		%Head.rotate_object_local(Vector3.RIGHT, -pitch)
+
+func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
+	if not is_local_player or pause_input: return
+	
+	state.transform.basis = Basis()
+	state.transform.basis = state.transform.basis.rotated(Vector3.UP, -yaw)
+
 
 func _physics_process(_delta: float) -> void:
 	if not is_local_player: return
