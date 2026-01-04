@@ -1,0 +1,40 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Hide and Schmove"
+config/features=PackedStringArray("4.5", "Forward Plus")
+run/max_fps=251
+boot_splash/bg_color=Color(0, 0, 0, 1)
+boot_splash/show_image=false
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/mode=3
+window/size/resizable=false
+window/size/borderless=true
+window/stretch/mode="canvas_items"
+window/vsync/vsync_mode=0
+
+[physics]
+
+3d/run_on_separate_thread=true
+common/physics_ticks_per_second=126
+common/max_physics_steps_per_frame=16
+common/physics_jitter_fix=0.0
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+anti_aliasing/quality/msaa_3d=2
+anti_aliasing/screen_space_roughness_limiter/enabled=false
