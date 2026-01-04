@@ -63,6 +63,9 @@ func _input(event: InputEvent) -> void:
 		%Head.rotate_object_local(Vector3.RIGHT, -pitch)
 
 
+@onready var hook_material = StandardMaterial3D.new()
+var hooked := false
+var hook_point := Vector3.ZERO
 func _physics_process(_delta: float) -> void:
 	if not is_local_player: return
 	
@@ -109,11 +112,23 @@ func _physics_process(_delta: float) -> void:
 		physics_material_override.friction = 0.0
 	else: physics_material_override.friction = 1.0
 	
+	if Input.is_action_pressed("Hook") and not hooked:
+		%Camera_Raycast.force_raycast_update()
+		if %Camera_Raycast.is_colliding():
+			hook_point = %Camera_Raycast.get_collision_point()
+			hooked = true
+	elif not Input.is_action_pressed("Hook"): hooked = false
+	
 	%Hook.mesh.clear_surfaces()
-	if Input.is_action_pressed("Hook"):
-		%Hook.mesh.surface_begin(Mesh.PRIMITIVE_LINES, StandardMaterial3D.new())
+	if hooked:
+		apply_central_force(
+			(hook_point - %Hook.global_position).normalized() *
+			move_speed
+		)
+		
+		%Hook.mesh.surface_begin(Mesh.PRIMITIVE_LINES, hook_material)
 		%Hook.mesh.surface_add_vertex(Vector3.ZERO)
-		%Hook.mesh.surface_add_vertex(Vector3(0.0, 0.0, -2.0)) # TODO
+		%Hook.mesh.surface_add_vertex(to_local(hook_point).rotated(Vector3.UP, yaw))
 		%Hook.mesh.surface_end()
 	
 	if Input.is_action_just_pressed("Flashlight"):

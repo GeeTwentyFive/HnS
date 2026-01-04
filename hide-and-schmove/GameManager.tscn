@@ -33,5 +33,10 @@ allow_lesser = true
 layout_mode = 2
 text = "Exit"
 
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)
+shadow_enabled = true
+sky_mode = 1
+
 [connection signal="value_changed" from="Settings_Popup/VBoxContainer/Settings_Sensitivity" to="." method="_on_settings_sensitivity_value_changed"]
 [connection signal="pressed" from="Settings_Popup/VBoxContainer/Exit_Button" to="." method="_on_exit_button_pressed"]
