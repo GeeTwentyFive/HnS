@@ -1,7 +1,8 @@
-[gd_scene load_steps=13 format=3 uid="uid://u5ynn5qp2oq2"]
+[gd_scene load_steps=14 format=3 uid="uid://u5ynn5qp2oq2"]
 
 [ext_resource type="Script" uid="uid://cankftc73niri" path="res://player.gd" id="1_xhfnw"]
 [ext_resource type="AudioStream" uid="uid://bp1behgoo61r4" path="res://Audio/impactSoft_medium_000.ogg" id="2_kpjcp"]
+[ext_resource type="AudioStream" uid="uid://xtkscn00pkac" path="res://Audio/slide.ogg" id="3_kne1u"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_xhfnw"]
 
@@ -112,4 +113,6 @@ attenuation_model = 1
 
 [node name="Slide_Sound" type="AudioStreamPlayer3D" parent="."]
 unique_name_in_owner = true
+stream = ExtResource("3_kne1u")
 attenuation_model = 1
+volume_db = -70.0

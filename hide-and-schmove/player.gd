@@ -73,6 +73,7 @@ func _physics_process(_delta: float) -> void:
 	if slide_sound_playing:
 		if not %Slide_Sound.playing:
 			%Slide_Sound.play()
+	else: %Slide_Sound.stop()
 	
 	%Hook.mesh.clear_surfaces()
 	if hooked:
@@ -146,7 +147,7 @@ func _physics_process(_delta: float) -> void:
 	if Input.is_action_pressed("Slide"):
 		physics_material_override.friction = 0.0
 		
-		if is_on_ground or is_at_wall:
+		if is_on_ground and linear_velocity.length() > 0.1:
 			slide_sound_playing = true
 		else: slide_sound_playing = false
 	else:
