@@ -5,16 +5,18 @@ extends RigidBody3D
 const RUN_SPEED = 25.0
 const WALK_SPEED = RUN_SPEED / 2
 const JUMP_IMPULSE = 6.0
+const LOCAL_PLAYER_BODY_TRANSPARENCY = 0.1
 
 
 @export var is_local_player: bool = false
 var is_seeker: bool = false:
 	set(x):
 		is_seeker = x
+		var alpha := LOCAL_PLAYER_BODY_TRANSPARENCY if is_local_player else 1.0
 		if is_seeker:
-			%Body.get_surface_override_material(0).albedo_color = Color(1.0, 0.0, 0.0)
+			%Body.get_surface_override_material(0).albedo_color = Color(1.0, 0.0, 0.0, alpha)
 		else:
-			%Body.get_surface_override_material(0).albedo_color = Color(0.0, 0.0, 1.0)
+			%Body.get_surface_override_material(0).albedo_color = Color(0.0, 0.0, 1.0, alpha)
 var sensitivity: float = 0.01
 var pause_input: bool = false
 var move_speed := RUN_SPEED
@@ -40,6 +42,10 @@ func _ready() -> void:
 	
 	Input.use_accumulated_input = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	
+	var material: StandardMaterial3D = %Body.get_surface_override_material(0)
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_DEPTH_PRE_PASS
+	material.albedo_color.a = LOCAL_PLAYER_BODY_TRANSPARENCY
 
 
 func _input(event: InputEvent) -> void:
@@ -48,7 +54,7 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		yaw += event.screen_relative.x * sensitivity
 		yaw = fmod(yaw, TAU)
-		# ^ is set in integrate_forces
+		# ^ is set in integrate_forces # TODO: rotate body instead
 		
 		pitch += event.screen_relative.y * sensitivity
 		pitch = clampf(pitch, -PI/2, PI/2)
