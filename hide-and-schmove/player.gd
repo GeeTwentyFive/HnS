@@ -90,7 +90,7 @@ func _physics_process(_delta: float) -> void:
 		
 		if last_hooked == false:
 			var hook_point_sound := AudioStreamPlayer3D.new()
-			hook_point_sound.global_position = hook_point # TODO?: Move down?
+			hook_point_sound.position = hook_point
 			hook_point_sound.stream = HOOK_POINT_SOUND
 			hook_point_sound.attenuation_model = AudioStreamPlayer3D.ATTENUATION_INVERSE_SQUARE_DISTANCE
 			hook_point_sound.autoplay = true
