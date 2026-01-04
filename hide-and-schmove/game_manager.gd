@@ -1,10 +1,11 @@
 extends Node
 
 
-const SETTINGS_PATH = "user://hns_settings.json"
+const SETTINGS_PATH = "HnS_settings.json"
 
 
 var settings: Dictionary = {
+	"name": "Player",
 	"sensitivity": 0.01
 }
 
@@ -58,6 +59,7 @@ func _ready() -> void:
 	
 	local_player = Player.new()
 	local_player.is_local_player = true
+	local_player.name = settings["name"]
 	local_player.sensitivity = settings["sensitivity"]
 	add_child(local_player)
 	
