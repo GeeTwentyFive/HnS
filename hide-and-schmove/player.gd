@@ -54,18 +54,13 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		yaw += event.screen_relative.x * sensitivity
 		yaw = fmod(yaw, TAU)
-		# ^ is set in integrate_forces # TODO: rotate body instead
+		%Body.transform.basis = Basis()
+		%Body.rotate_object_local(Vector3.UP, -yaw)
 		
 		pitch += event.screen_relative.y * sensitivity
 		pitch = clampf(pitch, -PI/2, PI/2)
 		%Head.transform.basis = Basis()
 		%Head.rotate_object_local(Vector3.RIGHT, -pitch)
-
-func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
-	if not is_local_player or pause_input: return
-	
-	state.transform.basis = Basis()
-	state.transform.basis = state.transform.basis.rotated(Vector3.UP, -yaw)
 
 
 func _physics_process(_delta: float) -> void:

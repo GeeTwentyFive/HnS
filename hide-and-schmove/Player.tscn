@@ -49,26 +49,26 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
 mesh = SubResource("CylinderMesh_xhfnw")
 surface_material_override/0 = SubResource("StandardMaterial3D_kpjcp")
 
-[node name="Head" type="MeshInstance3D" parent="."]
+[node name="Head" type="MeshInstance3D" parent="Body"]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0)
 mesh = SubResource("SphereMesh_kne1u")
-skeleton = NodePath("../CollisionShape3D")
+skeleton = NodePath("../../CollisionShape3D")
 
-[node name="Camera3D" type="Camera3D" parent="Head"]
+[node name="Camera3D" type="Camera3D" parent="Body/Head"]
 fov = 90.0
 near = 0.01
 far = 10000.0
 
-[node name="Camera_Raycast" type="RayCast3D" parent="Head/Camera3D"]
+[node name="Camera_Raycast" type="RayCast3D" parent="Body/Head/Camera3D"]
 unique_name_in_owner = true
 target_position = Vector3(0, 0, -10000)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Head/Camera3D"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Body/Head/Camera3D"]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, -0.1)
 mesh = SubResource("CylinderMesh_e80uo")
 
-[node name="Flashlight" type="SpotLight3D" parent="Head/Camera3D/MeshInstance3D"]
+[node name="Flashlight" type="SpotLight3D" parent="Body/Head/Camera3D/MeshInstance3D"]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)
 visible = false
