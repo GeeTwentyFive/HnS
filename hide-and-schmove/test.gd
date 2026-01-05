@@ -1,12 +1,15 @@
 extends Node
 
 
+var hider_spawn := Vector3(0.0, 0.0, 0.0)
+var seeker_spawn := Vector3(0.0, 10.0, 0.0)
+
 func _ready() -> void:
 	var map_json = JSON.parse_string(FileAccess.get_file_as_string("TEST_MAP.json"))
 	if map_json == null:
 		print("ERROR: Failed to load map")
 		return
-	for map_object in map_json:
+	for map_object in map_json: # vvvv COPY FROM HERE vvvv
 		match map_object["type"]:
 			"Box.gd":
 				var box_mesh := MeshInstance3D.new()
@@ -49,7 +52,11 @@ func _ready() -> void:
 				add_child(light)
 			
 			"Spawn_Hider.gd":
-				pass # TODO
+				hider_spawn.x = map_object["position_x"]
+				hider_spawn.y = map_object["position_y"]
+				hider_spawn.z = map_object["position_z"]
 			
 			"Spawn_Seeker.gd":
-				pass # TODO
+				seeker_spawn.x = map_object["position_x"]
+				seeker_spawn.y = map_object["position_y"]
+				seeker_spawn.z = map_object["position_z"]

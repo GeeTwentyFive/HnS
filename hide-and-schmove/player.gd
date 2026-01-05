@@ -6,7 +6,7 @@ const RUN_SPEED = 25.0
 const WALK_SPEED = RUN_SPEED / 2
 const JUMP_IMPULSE = 6.0
 const LOCAL_PLAYER_BODY_TRANSPARENCY = 0.1
-const WALLJUMP_SOUND_PITCH_SCALE = 1.1
+const WALLJUMP_SOUND_PITCH_SCALE = 1.2
 const HOOK_POINT_SOUND = preload("res://Audio/impactSoft_heavy_000.ogg")
 
 
@@ -19,6 +19,14 @@ var is_seeker: bool = false:
 			%Body.get_surface_override_material(0).albedo_color = Color(1.0, 0.0, 0.0, alpha)
 		else:
 			%Body.get_surface_override_material(0).albedo_color = Color(0.0, 0.0, 1.0, alpha)
+var alive: bool = true:
+	set(x):
+		alive = x
+		if alive: is_seeker = is_seeker
+		else: # vvv (to maintain alpha) vvv
+			%Body.get_surface_override_material(0).albedo_color.r = 1.0
+			%Body.get_surface_override_material(0).albedo_color.g = 1.0
+			%Body.get_surface_override_material(0).albedo_color.b = 1.0
 var sensitivity: float = 0.01
 var pause_input: bool = false
 var move_speed := RUN_SPEED

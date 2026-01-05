@@ -35,10 +35,11 @@ func _ready() -> void:
 	
 	# TODO: If not host:
 		# - while no host: wait for host
-		# - if host["game_started"]: exit
+		# - set `host_id`
+		# - if sns.states[host_id]["game_started"]: exit
 	
 	# TODO: If host: Set map_data -> map_loaded = true
-	# TODO: else: load map from host["map_data"] -> map_loaded = true
+	# TODO: else: load map from sns.states[host_id]["map_data"] -> map_loaded = true
 	
 	# Generate user settings if they don't exist
 	if not FileAccess.file_exists(SETTINGS_PATH):
@@ -69,7 +70,7 @@ func _ready() -> void:
 		# - Wait until everyone's map_loaded == true
 		# - clear map_data
 		# - game_started = true
-	# TODO: else: wait until host["game_started"]
+	# TODO: else: wait until sns.states[host_id]["game_started"]
 	
 	# TODO: Spawn remote players
 		# TODO: ^ .set_meta("net_id", sns.states.keys[x])
