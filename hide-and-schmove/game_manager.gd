@@ -15,7 +15,9 @@ var seeker_spawn := Vector3(0.0, 10.0, 0.0)
 var local_player: Player = null
 var remote_players: Array[Player] = []
 
-# TODO: local_state
+var local_state := {
+	# TODO
+}
 
 
 func _ready() -> void:
