@@ -1,0 +1,210 @@
+[
+	{
+		"data": {
+			"Color A": 1.0,
+			"Color B": 0.5,
+			"Color G": 0.5,
+			"Color R": 0.5
+		},
+		"position_x": 0.0,
+		"position_y": 0.0,
+		"position_z": 0.0,
+		"rotation_x": 0.0,
+		"rotation_y": 0.0,
+		"rotation_z": 0.0,
+		"scale_x": 10.0,
+		"scale_y": 0.100000001490116,
+		"scale_z": 10.0,
+		"type": "Box.gd"
+	},
+	{
+		"data": {
+			"Color A": 1.0,
+			"Color B": 1.0,
+			"Color G": 0.0,
+			"Color R": 0.0
+		},
+		"position_x": 4.40000009536743,
+		"position_y": 0.5,
+		"position_z": -4.40000009536743,
+		"rotation_x": 0.0,
+		"rotation_y": 0.0,
+		"rotation_z": 0.0,
+		"scale_x": 1.0,
+		"scale_y": 1.0,
+		"scale_z": 1.0,
+		"type": "Box.gd"
+	},
+	{
+		"data": {
+			"Color A": 1.0,
+			"Color B": 0.0,
+			"Color G": 0.0,
+			"Color R": 1.0
+		},
+		"position_x": -4.40000009536743,
+		"position_y": 0.5,
+		"position_z": 4.40000009536743,
+		"rotation_x": 0.0,
+		"rotation_y": 0.0,
+		"rotation_z": 0.0,
+		"scale_x": 1.0,
+		"scale_y": 1.0,
+		"scale_z": 1.0,
+		"type": "Box.gd"
+	},
+	{
+		"data": {
+			"Color A": 1.0,
+			"Color B": 0.5,
+			"Color G": 0.5,
+			"Color R": 0.5
+		},
+		"position_x": 3.0,
+		"position_y": 2.0,
+		"position_z": 5.0,
+		"rotation_x": 0.0,
+		"rotation_y": 0.0,
+		"rotation_z": 0.0,
+		"scale_x": 4.0,
+		"scale_y": 4.0,
+		"scale_z": 0.100000001490116,
+		"type": "Box.gd"
+	},
+	{
+		"data": {
+			"Color A": 1.0,
+			"Color B": 0.5,
+			"Color G": 0.5,
+			"Color R": 0.5
+		},
+		"position_x": 5.0,
+		"position_y": 2.0,
+		"position_z": 3.0,
+		"rotation_x": 0.0,
+		"rotation_y": 0.0,
+		"rotation_z": 0.0,
+		"scale_x": 0.100000001490116,
+		"scale_y": 4.0,
+		"scale_z": 4.0,
+		"type": "Box.gd"
+	},
+	{
+		"data": {
+			"Color A": 1.0,
+			"Color B": 0.5,
+			"Color G": 0.5,
+			"Color R": 0.5
+		},
+		"position_x": 3.0,
+		"position_y": 4.0,
+		"position_z": 3.0,
+		"rotation_x": 0.0,
+		"rotation_y": 0.0,
+		"rotation_z": 0.0,
+		"scale_x": 3.90000009536743,
+		"scale_y": 0.100000001490116,
+		"scale_z": 3.90000009536743,
+		"type": "Box.gd"
+	},
+	{
+		"data": {
+			"Color A": 1.0,
+			"Color B": 0.5,
+			"Color G": 0.5,
+			"Color R": 0.5
+		},
+		"position_x": -5.0,
+		"position_y": 2.0,
+		"position_z": -3.0,
+		"rotation_x": 0.0,
+		"rotation_y": 0.0,
+		"rotation_z": 0.0,
+		"scale_x": 0.100000001490116,
+		"scale_y": 4.0,
+		"scale_z": 4.0,
+		"type": "Box.gd"
+	},
+	{
+		"data": {
+			"Color A": 1.0,
+			"Color B": 0.5,
+			"Color G": 0.5,
+			"Color R": 0.5
+		},
+		"position_x": -3.0,
+		"position_y": 2.0,
+		"position_z": -5.0,
+		"rotation_x": 0.0,
+		"rotation_y": 0.0,
+		"rotation_z": 0.0,
+		"scale_x": 4.0,
+		"scale_y": 4.0,
+		"scale_z": 0.100000001490116,
+		"type": "Box.gd"
+	},
+	{
+		"data": {
+			"Color A": 1.0,
+			"Color B": 0.5,
+			"Color G": 0.5,
+			"Color R": 0.5
+		},
+		"position_x": -3.0,
+		"position_y": 4.0,
+		"position_z": -3.0,
+		"rotation_x": 0.0,
+		"rotation_y": 0.0,
+		"rotation_z": 0.0,
+		"scale_x": 3.90000009536743,
+		"scale_y": 0.100000001490116,
+		"scale_z": 3.90000009536743,
+		"type": "Box.gd"
+	},
+	{
+		"data": {
+			"Brightness": 10.0,
+			"Range": 5.0
+		},
+		"position_x": -3.0,
+		"position_y": 3.90000009536743,
+		"position_z": -3.0,
+		"rotation_x": 0.0,
+		"rotation_y": 0.0,
+		"rotation_z": 0.0,
+		"scale_x": 1.0,
+		"scale_y": 1.0,
+		"scale_z": 1.0,
+		"type": "Light.gd"
+	},
+	{
+		"data": {
+
+		},
+		"position_x": -4.40000009536743,
+		"position_y": 1.0,
+		"position_z": 4.40000009536743,
+		"rotation_x": 0.0,
+		"rotation_y": 0.0,
+		"rotation_z": 0.0,
+		"scale_x": 1.0,
+		"scale_y": 1.0,
+		"scale_z": 1.0,
+		"type": "Spawn_Seeker.gd"
+	},
+	{
+		"data": {
+
+		},
+		"position_x": 4.40000009536743,
+		"position_y": 1.0,
+		"position_z": -4.40000009536743,
+		"rotation_x": 0.0,
+		"rotation_y": 0.0,
+		"rotation_z": 0.0,
+		"scale_x": 1.0,
+		"scale_y": 1.0,
+		"scale_z": 1.0,
+		"type": "Spawn_Hider.gd"
+	}
+]

@@ -6,6 +6,7 @@ const RUN_SPEED = 25.0
 const WALK_SPEED = RUN_SPEED / 2
 const JUMP_IMPULSE = 6.0
 const LOCAL_PLAYER_BODY_TRANSPARENCY = 0.1
+const WALLJUMP_SOUND_PITCH_SCALE = 1.1
 const HOOK_POINT_SOUND = preload("res://Audio/impactSoft_heavy_000.ogg")
 
 
@@ -24,6 +25,7 @@ var move_speed := RUN_SPEED
 var yaw := 0.0
 var pitch := 0.0
 var jumped := false
+var walljumped := false
 var slide_sound_playing := false
 var hooked := false
 var hook_point := Vector3.ZERO
@@ -63,12 +65,19 @@ func _input(event: InputEvent) -> void:
 
 
 var last_jumped := jumped
+var last_walljumped := walljumped
 @onready var hook_material = StandardMaterial3D.new()
 var last_hooked := hooked
 func _physics_process(_delta: float) -> void:
 	if jumped and not last_jumped:
+		%Jump_Sound.pitch_scale = 1.0
 		%Jump_Sound.play()
 	last_jumped = jumped
+	
+	if walljumped and not last_walljumped:
+		%Jump_Sound.pitch_scale = WALLJUMP_SOUND_PITCH_SCALE
+		%Jump_Sound.play()
+	last_walljumped = walljumped
 	
 	if slide_sound_playing:
 		if not %Slide_Sound.playing:
@@ -131,6 +140,7 @@ func _physics_process(_delta: float) -> void:
 		)
 	
 	jumped = false
+	walljumped = false
 	if Input.is_action_just_pressed("Jump"):
 		if is_on_ground:
 			if linear_velocity.y < 0.0:
@@ -140,9 +150,10 @@ func _physics_process(_delta: float) -> void:
 		
 		elif is_at_wall:
 			apply_central_impulse(
-				Vector3(movement_direction.x, JUMP_IMPULSE, movement_direction.y)
+				Vector3(movement_direction.x, 1.0, movement_direction.y) *
+				JUMP_IMPULSE
 			)
-			jumped = true
+			walljumped = true
 	
 	if Input.is_action_pressed("Slide"):
 		physics_material_override.friction = 0.0
