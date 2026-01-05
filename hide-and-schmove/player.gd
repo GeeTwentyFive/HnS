@@ -27,6 +27,8 @@ var alive: bool = true:
 			%Body.get_surface_override_material(0).albedo_color.r = 1.0
 			%Body.get_surface_override_material(0).albedo_color.g = 1.0
 			%Body.get_surface_override_material(0).albedo_color.b = 1.0
+var seek_time := 0.0
+var last_alive_rounds := 0
 var sensitivity: float = 0.01
 var pause_input: bool = false
 var move_speed := RUN_SPEED
@@ -76,7 +78,10 @@ var last_jumped := jumped
 var last_walljumped := walljumped
 @onready var hook_material = StandardMaterial3D.new()
 var last_hooked := hooked
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
+	if is_seeker:
+		seek_time += delta
+	
 	if jumped and not last_jumped:
 		%Jump_Sound.pitch_scale = 1.0
 		%Jump_Sound.play()
