@@ -33,8 +33,32 @@ allow_lesser = true
 layout_mode = 2
 text = "Exit"
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+[node name="Sun" type="Node3D" parent="."]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="Sun"]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)
+shadow_enabled = true
+sky_mode = 1
+
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="Sun"]
+transform = Transform3D(1, 0, 0, 0, 0.017452383, 0.9998477, 0, -0.9998477, 0.017452383, 0, 0, 0)
+shadow_enabled = true
+sky_mode = 1
+
+[node name="DirectionalLight3D3" type="DirectionalLight3D" parent="Sun"]
+transform = Transform3D(1, 0, 0, 0, -0.017452352, 0.9998477, 0, -0.9998477, -0.017452352, 0, 0, 0)
+shadow_enabled = true
+sky_mode = 1
+
+[node name="DirectionalLight3D4" type="DirectionalLight3D" parent="Sun"]
+transform = Transform3D(0.9998477, 7.628689e-10, -0.017452406, 0.017452406, -4.370473e-08, 0.9998477, 0, -1, -4.371139e-08, 0, 0, 0)
+rotation_order = 3
+shadow_enabled = true
+sky_mode = 1
+
+[node name="DirectionalLight3D5" type="DirectionalLight3D" parent="Sun"]
+transform = Transform3D(0.9998477, -7.628689e-10, 0.017452406, -0.017452406, -4.370473e-08, 0.9998477, 0, -1, -4.371139e-08, 0, 0, 0)
+rotation_order = 3
 shadow_enabled = true
 sky_mode = 1
 
