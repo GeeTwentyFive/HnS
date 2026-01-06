@@ -1,10 +1,10 @@
 [
 	{
 		"data": {
-			"Color A": 1.0,
-			"Color B": 0.5,
-			"Color G": 0.5,
-			"Color R": 0.5
+			"Color A": 255.0,
+			"Color B": 128.0,
+			"Color G": 128.0,
+			"Color R": 128.0
 		},
 		"pos": [
 			0.0,
@@ -26,8 +26,8 @@
 	},
 	{
 		"data": {
-			"Color A": 1.0,
-			"Color B": 1.0,
+			"Color A": 255.0,
+			"Color B": 255.0,
 			"Color G": 0.0,
 			"Color R": 0.0
 		},
@@ -51,10 +51,10 @@
 	},
 	{
 		"data": {
-			"Color A": 1.0,
+			"Color A": 255.0,
 			"Color B": 0.0,
 			"Color G": 0.0,
-			"Color R": 1.0
+			"Color R": 255.0
 		},
 		"pos": [
 			-4.40000009536743,
@@ -76,10 +76,10 @@
 	},
 	{
 		"data": {
-			"Color A": 1.0,
-			"Color B": 0.5,
-			"Color G": 0.5,
-			"Color R": 0.5
+			"Color A": 255.0,
+			"Color B": 128.0,
+			"Color G": 128.0,
+			"Color R": 128.0
 		},
 		"pos": [
 			3.0,
@@ -101,10 +101,10 @@
 	},
 	{
 		"data": {
-			"Color A": 1.0,
-			"Color B": 0.5,
-			"Color G": 0.5,
-			"Color R": 0.5
+			"Color A": 255.0,
+			"Color B": 128.0,
+			"Color G": 128.0,
+			"Color R": 128.0
 		},
 		"pos": [
 			5.0,
@@ -126,10 +126,10 @@
 	},
 	{
 		"data": {
-			"Color A": 1.0,
-			"Color B": 0.5,
-			"Color G": 0.5,
-			"Color R": 0.5
+			"Color A": 255.0,
+			"Color B": 128.0,
+			"Color G": 128.0,
+			"Color R": 128.0
 		},
 		"pos": [
 			3.0,
@@ -151,10 +151,10 @@
 	},
 	{
 		"data": {
-			"Color A": 1.0,
-			"Color B": 0.5,
-			"Color G": 0.5,
-			"Color R": 0.5
+			"Color A": 255.0,
+			"Color B": 128.0,
+			"Color G": 128.0,
+			"Color R": 128.0
 		},
 		"pos": [
 			-5.0,
@@ -176,10 +176,10 @@
 	},
 	{
 		"data": {
-			"Color A": 1.0,
-			"Color B": 0.5,
-			"Color G": 0.5,
-			"Color R": 0.5
+			"Color A": 255.0,
+			"Color B": 128.0,
+			"Color G": 128.0,
+			"Color R": 128.0
 		},
 		"pos": [
 			-3.0,
@@ -201,10 +201,10 @@
 	},
 	{
 		"data": {
-			"Color A": 1.0,
-			"Color B": 0.5,
-			"Color G": 0.5,
-			"Color R": 0.5
+			"Color A": 255.0,
+			"Color B": 128.0,
+			"Color G": 128.0,
+			"Color R": 128.0
 		},
 		"pos": [
 			-3.0,
