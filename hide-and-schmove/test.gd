@@ -9,9 +9,9 @@ func _ready() -> void:
 	if map_json == null:
 		print("ERROR: Failed to load map")
 		return
-	for map_object in map_json: # vvvv COPY FROM HERE vvvv
-		match map_object["type"]:
-			"Box.gd":
+	for map_object in map_json:
+		match map_object["type"].get_basename():
+			"Box":
 				var box_mesh := MeshInstance3D.new()
 				box_mesh.mesh = BoxMesh.new()
 				box_mesh.mesh.size = Vector3(
@@ -48,7 +48,7 @@ func _ready() -> void:
 				)
 				add_child(box)
 			
-			"Light.gd":
+			"Light":
 				var light := OmniLight3D.new()
 				light.omni_attenuation = 2.0
 				light.shadow_enabled = true
@@ -61,14 +61,14 @@ func _ready() -> void:
 				)
 				add_child(light)
 			
-			"Spawn_Hider.gd":
+			"Spawn_Hider":
 				hider_spawn = Vector3(
 					map_object["pos"][0],
 					map_object["pos"][1],
 					map_object["pos"][2]
 				)
 			
-			"Spawn_Seeker.gd":
+			"Spawn_Seeker":
 				seeker_spawn = Vector3(
 					map_object["pos"][0],
 					map_object["pos"][1],
