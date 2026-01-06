@@ -19,7 +19,7 @@ var local_state := {
 	"name": "",
 	"host": false,
 	"host_data": {
-		"map_data": "",
+		"map_json": "",
 		"players_count": 0,
 		"game_started": false
 	},
@@ -42,7 +42,7 @@ var host_id := -1
 var players: Dictionary[int, Player] = {}
 
 
-func LoadMap(map_data: String):
+func LoadMap(map_json: String):
 	pass # TODO
 
 func StartGame() -> void:
@@ -102,22 +102,19 @@ func _ready() -> void:
 		local_state["host"] = true
 		host_id = sns.local_id
 		
-		var map_data := FileAccess.get_file_as_string(args[1])
-		if map_data.is_empty():
+		var map_json := FileAccess.get_file_as_string(args[1])
+		if map_json.is_empty():
 			OS.alert(
 				"ERROR: Failed to load map at path " + args[1] + "\n" +
 				"^ FileAccess Error: " + str(FileAccess.get_open_error())
 			)
 			get_tree().quit(1)
-		print(map_data) # TEMP; TEST
-		map_data = map_data.strip_escapes().remove_chars(" ")
-		print(map_data) # TEMP; TEST
-		get_tree().quit() # TEMP; TEST
-		if map_data.length() > MAX_MAP_SIZE:
+		map_json = map_json.strip_escapes().remove_chars(" ")
+		if map_json.length() > MAX_MAP_SIZE:
 			OS.alert("ERROR: Map data is too large")
 			get_tree().quit(1)
-		local_state["host"]["map_data"] = map_data
-		LoadMap(map_data)
+		local_state["host"]["map_json"] = map_json
+		LoadMap(map_json)
 		local_state["map_loaded"] = true
 		
 		%Host_Start.visible = true
@@ -141,11 +138,7 @@ func _on_client_wait_for_host_timer_timeout() -> void:
 	
 	if not local_state["map_loaded"]:
 		if not host_state["map_loaded"]: return
-		var map_data = JSON.parse_string(host_state["host_data"]["map_data"])
-		if map_data == null:
-			OS.alert("ERROR: Failed to parse map json")
-			get_tree().quit(1)
-		LoadMap(map_data)
+		LoadMap(host_state["host_data"]["map_json"])
 		local_state["map_loaded"] = true
 	
 	if not host_state["host_data"]["game_started"]: return
@@ -162,7 +155,7 @@ func _on_host_start_button_pressed() -> void:
 			ready_players += 1
 	if ready_players < local_state["host_data"]["players_count"]: return
 	
-	local_state["host_data"]["map_data"] = ""
+	local_state["host_data"]["map_json"] = ""
 	
 	local_state["host_data"]["game_started"] = true
 	StartGame()
