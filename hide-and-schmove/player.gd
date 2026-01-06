@@ -10,7 +10,15 @@ const WALLJUMP_SOUND_PITCH_SCALE = 1.2
 const HOOK_POINT_SOUND = preload("res://Audio/impactSoft_heavy_000.ogg")
 
 
+# Local vars
 @export var is_local_player: bool = false
+var sensitivity: float = 0.01
+var pause_input: bool = false
+var move_speed := RUN_SPEED
+
+# Networked vars
+var yaw := 0.0
+var pitch := 0.0
 var is_seeker: bool = false:
 	set(x):
 		is_seeker = x
@@ -29,11 +37,6 @@ var alive: bool = true:
 			%Body.get_surface_override_material(0).albedo_color.b = 1.0
 var seek_time := 0.0
 var last_alive_rounds := 0
-var sensitivity: float = 0.01
-var pause_input: bool = false
-var move_speed := RUN_SPEED
-var yaw := 0.0
-var pitch := 0.0
 var jumped := false
 var walljumped := false
 var slide_sound_playing := false

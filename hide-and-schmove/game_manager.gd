@@ -2,6 +2,7 @@ extends Node
 
 
 const SETTINGS_PATH = "HnS_settings.json"
+const MAX_MAP_SIZE = 60000 # Since UDP packet limit is 65K
 
 
 var settings: Dictionary = {
@@ -12,11 +13,29 @@ var settings: Dictionary = {
 var hider_spawn := Vector3(0.0, 0.0, 0.0)
 var seeker_spawn := Vector3(0.0, 10.0, 0.0)
 
-var local_player: Player = null
-var remote_players: Array[Player] = []
+# TODO: SimpleNetSync
+
+var players: Dictionary[int, Player] = {}
 
 var local_state := {
-	# TODO
+	"name": "",
+	"host": false,
+	"map_data": "",
+	"map_loaded": false,
+	"game_started": false,
+	"pos": [0.0, 0.0, 0.0],
+	"yaw": 0.0,
+	"pitch": 0.0,
+	"is_seeker": false,
+	"alive": true,
+	"seek_time": 0.0,
+	"last_alive_rounds": 0.0,
+	"jumped": false,
+	"walljumped": false,
+	"slide_sound_playing": false,
+	"hooked": false,
+	"hook_point": [0.0, 0.0, 0.0],
+	"flashlight": false
 }
 
 
@@ -32,6 +51,7 @@ func _ready() -> void:
 	
 	# (if '[PATH/TO/MAP.json]' is set then you are host)
 	# TODO: If host: load map
+		# ^ + check if compressed map_json is >MAX_MAP_SIZE
 	
 	# TODO: Connect to server
 	
@@ -62,11 +82,11 @@ func _ready() -> void:
 			FileAccess.WRITE
 		).store_string(JSON.stringify(settings))
 	
-	local_player = Player.new()
-	local_player.is_local_player = true
-	local_player.name = settings["name"]
-	local_player.sensitivity = settings["sensitivity"]
-	add_child(local_player)
+	# TODO: Update to new "players[id]" version
+	#local_player = Player.new()
+	#local_player.is_local_player = true
+	#local_player.sensitivity = settings["sensitivity"]
+	#add_child(local_player)
 	
 	# TODO: If host:
 		# - Wait until everyone's map_loaded == true
@@ -75,31 +95,32 @@ func _ready() -> void:
 	# TODO: else: wait until sns.states[host_id]["game_started"]
 	
 	# TODO: Spawn remote players
-		# TODO: ^ .set_meta("net_id", sns.states.keys[x])
 	
 	get_tree().paused = false
 
 func _physics_process(_delta: float) -> void:
 	pass # TODO: Game management & networked state sync
 
-func _input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo:
-		match event.keycode:
-			KEY_ESCAPE:
-				if not %Settings_Popup.visible:
-					local_player.pause_input = true
-					%Settings_Sensitivity.set_value_no_signal(local_player.sensitivity)
-					%Settings_Popup.show()
-				else:
-					%Settings_Popup.hide()
-					local_player.pause_input = false
+# TODO: Update to new "players[id]" version
+#func _input(event: InputEvent) -> void:
+	#if event is InputEventKey and event.pressed and not event.echo:
+		#match event.keycode:
+			#KEY_ESCAPE:
+				#if not %Settings_Popup.visible:
+					#local_player.pause_input = true
+					#%Settings_Sensitivity.set_value_no_signal(local_player.sensitivity)
+					#%Settings_Popup.show()
+				#else:
+					#%Settings_Popup.hide()
+					#local_player.pause_input = false
 
 
 #region CALLBACKS
 
-func _on_settings_sensitivity_value_changed(value: float) -> void:
-	settings["sensitivity"] = value
-	local_player.sensitivity = value
+# TODO: Update to new "players[id]" version
+#func _on_settings_sensitivity_value_changed(value: float) -> void:
+	#settings["sensitivity"] = value
+	#local_player.sensitivity = value
 
 func _on_exit_button_pressed() -> void:
 	get_tree().quit()
