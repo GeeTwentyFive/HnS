@@ -11,7 +11,6 @@ var settings: Dictionary = {
 	"sensitivity": 0.01
 }
 
-var map_data
 var hider_spawn := Vector3(0.0, 0.0, 0.0)
 var seeker_spawn := Vector3(0.0, 10.0, 0.0)
 
@@ -21,6 +20,7 @@ var local_state := {
 	"host": false,
 	"host_data": {
 		"map_data": "",
+		"players_count": 0,
 		"game_started": false
 	},
 	"map_loaded": false,
@@ -42,7 +42,10 @@ var host_id := -1
 var players: Dictionary[int, Player] = {}
 
 
-func start_game() -> void:
+func LoadMap(map_data: String):
+	pass # TODO
+
+func StartGame() -> void:
 	%Players_Connected_Update_Timer.stop()
 	
 	# Spawn local player
@@ -99,43 +102,78 @@ func _ready() -> void:
 		local_state["host"] = true
 		host_id = sns.local_id
 		
-		var map_json := FileAccess.get_file_as_string(args[1])
-		if map_json.is_empty():
-			print("ERROR: Failed to load map at path " + args[1])
-			print(FileAccess.get_open_error())
+		var map_data := FileAccess.get_file_as_string(args[1])
+		if map_data.is_empty():
+			OS.alert(
+				"ERROR: Failed to load map at path " + args[1] + "\n" +
+				"^ FileAccess Error: " + str(FileAccess.get_open_error())
+			)
 			get_tree().quit(1)
-		map_data = JSON.parse_string(map_json)
-		if map_data == null:
-			print("ERROR: Failed to parse map json")
+		print(map_data) # TEMP; TEST
+		map_data = map_data.strip_escapes().remove_chars(" ")
+		print(map_data) # TEMP; TEST
+		get_tree().quit() # TEMP; TEST
+		if map_data.length() > MAX_MAP_SIZE:
+			OS.alert("ERROR: Map data is too large")
 			get_tree().quit(1)
-		var compressed_map_json = JSON.stringify(map_data)
-		if compressed_map_json.length() > MAX_MAP_SIZE:
-			print("ERROR: Map data is too large")
-			get_tree().quit(1)
-		local_state["host"]["map_data"] = compressed_map_json
+		local_state["host"]["map_data"] = map_data
+		LoadMap(map_data)
 		local_state["map_loaded"] = true
 		
 		%Host_Start.visible = true
 	else: # Client:
-		pass
-		# TODO:
-		# - while no host: wait for host
-		# - set `host_id`
-		# - if sns.states[host_id]["game_started"]: exit
-		# - wait until sns.states[host_id]["map_loaded"]
-		# - load map from sns.states[host_id]["host_data"]["map_data"] -> map_loaded = true
-		# - wait until sns.states[host_id]["host_data"]["game_started"]
-		start_game()
+		for player_id in sns.states.keys():
+			if JSON.parse_string(sns.states[player_id])["host_data"]["game_started"]:
+				OS.alert("Game already started")
+				get_tree().quit()
+		
+		%Client_Wait_For_Host_Timer.start()
+
+func _on_client_wait_for_host_timer_timeout() -> void:
+	if host_id == -1:
+		for player_id in sns.states.keys():
+			var player_state = JSON.parse_string(sns.states[player_id])
+			if player_state["host"]:
+				host_id = player_id
+	if host_id == -1: return
+	
+	var host_state = JSON.parse_string(sns.states[host_id])
+	
+	if not local_state["map_loaded"]:
+		if not host_state["map_loaded"]: return
+		var map_data = JSON.parse_string(host_state["host_data"]["map_data"])
+		if map_data == null:
+			OS.alert("ERROR: Failed to parse map json")
+			get_tree().quit(1)
+		LoadMap(map_data)
+		local_state["map_loaded"] = true
+	
+	if not host_state["host_data"]["game_started"]: return
+	
+	%Client_Wait_For_Host_Timer.stop()
+	StartGame()
 
 func _on_host_start_button_pressed() -> void:
-	# TODO:
-	# - Wait until everyone's map_loaded == true
-	# - clear map_data
-	# - game_started = true
-	start_game()
+	local_state["host_data"]["players_count"] = sns.states.keys().size()
+	var ready_players := 0
+	for client_id in sns.states.keys():
+		var client_state = JSON.parse_string(sns.states[client_id])
+		if client_state["map_loaded"]:
+			ready_players += 1
+	if ready_players < local_state["host_data"]["players_count"]: return
+	
+	local_state["host_data"]["map_data"] = ""
+	
+	local_state["host_data"]["game_started"] = true
+	StartGame()
 
 func _physics_process(_delta: float) -> void:
-	pass # TODO: Game management & networked state sync
+	# TODO: Players state sync
+	
+	if local_state["host"]:
+		pass # TODO: Game management
+	
+	sns.send(JSON.stringify(local_state))
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
