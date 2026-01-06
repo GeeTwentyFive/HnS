@@ -20,9 +20,11 @@ var players: Dictionary[int, Player] = {}
 var local_state := {
 	"name": "",
 	"host": false,
-	"map_data": "",
+	"host_data": {
+		"map_data": "",
+		"game_started": false
+	},
 	"map_loaded": false,
-	"game_started": false,
 	"pos": [0.0, 0.0, 0.0],
 	"yaw": 0.0,
 	"pitch": 0.0,

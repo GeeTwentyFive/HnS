@@ -6,15 +6,22 @@
 			"Color G": 0.5,
 			"Color R": 0.5
 		},
-		"position_x": 0.0,
-		"position_y": 0.0,
-		"position_z": 0.0,
-		"rotation_x": 0.0,
-		"rotation_y": 0.0,
-		"rotation_z": 0.0,
-		"scale_x": 10.0,
-		"scale_y": 0.100000001490116,
-		"scale_z": 10.0,
+		"pos": [
+			0.0,
+			0.0,
+			0.0
+		],
+		"rot": [
+			0.0,
+			0.0,
+			0.0
+		],
+		"scale": [
+			10.0,
+			0.100000001490116,
+			10.0
+
+		],
 		"type": "Box.gd"
 	},
 	{
@@ -24,15 +31,22 @@
 			"Color G": 0.0,
 			"Color R": 0.0
 		},
-		"position_x": 4.40000009536743,
-		"position_y": 0.5,
-		"position_z": -4.40000009536743,
-		"rotation_x": 0.0,
-		"rotation_y": 0.0,
-		"rotation_z": 0.0,
-		"scale_x": 1.0,
-		"scale_y": 1.0,
-		"scale_z": 1.0,
+		"pos": [
+			4.40000009536743,
+			0.5,
+			-4.40000009536743
+		],
+		"rot": [
+			0.0,
+			0.0,
+			0.0
+		],
+		"scale": [
+			1.0,
+			1.0,
+			1.0
+
+		],
 		"type": "Box.gd"
 	},
 	{
@@ -42,15 +56,22 @@
 			"Color G": 0.0,
 			"Color R": 1.0
 		},
-		"position_x": -4.40000009536743,
-		"position_y": 0.5,
-		"position_z": 4.40000009536743,
-		"rotation_x": 0.0,
-		"rotation_y": 0.0,
-		"rotation_z": 0.0,
-		"scale_x": 1.0,
-		"scale_y": 1.0,
-		"scale_z": 1.0,
+		"pos": [
+			-4.40000009536743,
+			0.5,
+			4.40000009536743
+		],
+		"rot": [
+			0.0,
+			0.0,
+			0.0
+		],
+		"scale": [
+			1.0,
+			1.0,
+			1.0
+
+		],
 		"type": "Box.gd"
 	},
 	{
@@ -60,15 +81,22 @@
 			"Color G": 0.5,
 			"Color R": 0.5
 		},
-		"position_x": 3.0,
-		"position_y": 2.0,
-		"position_z": 5.0,
-		"rotation_x": 0.0,
-		"rotation_y": 0.0,
-		"rotation_z": 0.0,
-		"scale_x": 4.0,
-		"scale_y": 4.0,
-		"scale_z": 0.100000001490116,
+		"pos": [
+			3.0,
+			2.0,
+			5.0
+		],
+		"rot": [
+			0.0,
+			0.0,
+			0.0
+		],
+		"scale": [
+			4.0,
+			4.0,
+			0.100000001490116
+
+		],
 		"type": "Box.gd"
 	},
 	{
@@ -78,15 +106,22 @@
 			"Color G": 0.5,
 			"Color R": 0.5
 		},
-		"position_x": 5.0,
-		"position_y": 2.0,
-		"position_z": 3.0,
-		"rotation_x": 0.0,
-		"rotation_y": 0.0,
-		"rotation_z": 0.0,
-		"scale_x": 0.100000001490116,
-		"scale_y": 4.0,
-		"scale_z": 4.0,
+		"pos": [
+			5.0,
+			2.0,
+			3.0
+		],
+		"rot": [
+			0.0,
+			0.0,
+			0.0
+		],
+		"scale": [
+			0.100000001490116,
+			4.0,
+			4.0
+
+		],
 		"type": "Box.gd"
 	},
 	{
@@ -96,15 +131,22 @@
 			"Color G": 0.5,
 			"Color R": 0.5
 		},
-		"position_x": 3.0,
-		"position_y": 4.0,
-		"position_z": 3.0,
-		"rotation_x": 0.0,
-		"rotation_y": 0.0,
-		"rotation_z": 0.0,
-		"scale_x": 3.90000009536743,
-		"scale_y": 0.100000001490116,
-		"scale_z": 3.90000009536743,
+		"pos": [
+			3.0,
+			4.0,
+			3.0
+		],
+		"rot": [
+			0.0,
+			0.0,
+			0.0
+		],
+		"scale": [
+			3.90000009536743,
+			0.100000001490116,
+			3.90000009536743
+
+		],
 		"type": "Box.gd"
 	},
 	{
@@ -114,15 +156,22 @@
 			"Color G": 0.5,
 			"Color R": 0.5
 		},
-		"position_x": -5.0,
-		"position_y": 2.0,
-		"position_z": -3.0,
-		"rotation_x": 0.0,
-		"rotation_y": 0.0,
-		"rotation_z": 0.0,
-		"scale_x": 0.100000001490116,
-		"scale_y": 4.0,
-		"scale_z": 4.0,
+		"pos": [
+			-5.0,
+			2.0,
+			-3.0
+		],
+		"rot": [
+			0.0,
+			0.0,
+			0.0
+		],
+		"scale": [
+			0.100000001490116,
+			4.0,
+			4.0
+
+		],
 		"type": "Box.gd"
 	},
 	{
@@ -132,15 +181,22 @@
 			"Color G": 0.5,
 			"Color R": 0.5
 		},
-		"position_x": -3.0,
-		"position_y": 2.0,
-		"position_z": -5.0,
-		"rotation_x": 0.0,
-		"rotation_y": 0.0,
-		"rotation_z": 0.0,
-		"scale_x": 4.0,
-		"scale_y": 4.0,
-		"scale_z": 0.100000001490116,
+		"pos": [
+			-3.0,
+			2.0,
+			-5.0
+		],
+		"rot": [
+			0.0,
+			0.0,
+			0.0
+		],
+		"scale": [
+			4.0,
+			4.0,
+			0.100000001490116
+
+		],
 		"type": "Box.gd"
 	},
 	{
@@ -150,15 +206,22 @@
 			"Color G": 0.5,
 			"Color R": 0.5
 		},
-		"position_x": -3.0,
-		"position_y": 4.0,
-		"position_z": -3.0,
-		"rotation_x": 0.0,
-		"rotation_y": 0.0,
-		"rotation_z": 0.0,
-		"scale_x": 3.90000009536743,
-		"scale_y": 0.100000001490116,
-		"scale_z": 3.90000009536743,
+		"pos": [
+			-3.0,
+			4.0,
+			-3.0
+		],
+		"rot": [
+			0.0,
+			0.0,
+			0.0
+		],
+		"scale": [
+			3.90000009536743,
+			0.100000001490116,
+			3.90000009536743
+
+		],
 		"type": "Box.gd"
 	},
 	{
@@ -166,45 +229,66 @@
 			"Brightness": 10.0,
 			"Range": 5.0
 		},
-		"position_x": -3.0,
-		"position_y": 3.90000009536743,
-		"position_z": -3.0,
-		"rotation_x": 0.0,
-		"rotation_y": 0.0,
-		"rotation_z": 0.0,
-		"scale_x": 1.0,
-		"scale_y": 1.0,
-		"scale_z": 1.0,
+		"pos": [
+			-3.0,
+			3.90000009536743,
+			-3.0
+		],
+		"rot": [
+			0.0,
+			0.0,
+			0.0
+		],
+		"scale": [
+			1.0,
+			1.0,
+			1.0
+
+		],
 		"type": "Light.gd"
 	},
 	{
 		"data": {
 
 		},
-		"position_x": -4.40000009536743,
-		"position_y": 1.0,
-		"position_z": 4.40000009536743,
-		"rotation_x": 0.0,
-		"rotation_y": 0.0,
-		"rotation_z": 0.0,
-		"scale_x": 1.0,
-		"scale_y": 1.0,
-		"scale_z": 1.0,
+		"pos": [
+			-4.40000009536743,
+			1.0,
+			4.40000009536743
+		],
+		"rot": [
+			0.0,
+			0.0,
+			0.0
+		],
+		"scale": [
+			1.0,
+			1.0,
+			1.0
+
+		],
 		"type": "Spawn_Seeker.gd"
 	},
 	{
 		"data": {
 
 		},
-		"position_x": 4.40000009536743,
-		"position_y": 1.0,
-		"position_z": -4.40000009536743,
-		"rotation_x": 0.0,
-		"rotation_y": 0.0,
-		"rotation_z": 0.0,
-		"scale_x": 1.0,
-		"scale_y": 1.0,
-		"scale_z": 1.0,
+		"pos": [
+			4.40000009536743,
+			1.0,
+			-4.40000009536743
+		],
+		"rot": [
+			0.0,
+			0.0,
+			0.0
+		],
+		"scale": [
+			1.0,
+			1.0,
+			1.0
+
+		],
 		"type": "Spawn_Hider.gd"
 	}
 ]
