@@ -5,6 +5,62 @@
 [node name="GameManager" type="Node"]
 script = ExtResource("1_p13vs")
 
+[node name="Loading_Screen" type="ColorRect" parent="."]
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Loading_Screen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -73.0
+offset_top = -25.0
+offset_right = 73.0
+offset_bottom = 25.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="Loading_Screen/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Players connected:"
+horizontal_alignment = 1
+
+[node name="Players_Connected_Label" type="Label" parent="Loading_Screen/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "0"
+horizontal_alignment = 1
+
+[node name="Players_Connected_Update_Timer" type="Timer" parent="Loading_Screen/VBoxContainer/Players_Connected_Label"]
+unique_name_in_owner = true
+process_callback = 0
+wait_time = 0.1
+
+[node name="Host_Start" type="VBoxContainer" parent="Loading_Screen/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="Padding" type="Label" parent="Loading_Screen/VBoxContainer/Host_Start"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+
+[node name="Host_Start_Button" type="Button" parent="Loading_Screen/VBoxContainer/Host_Start"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 32
+text = "Start"
+
 [node name="Settings_Popup" type="PopupPanel" parent="."]
 unique_name_in_owner = true
 oversampling_override = 1.0
@@ -62,5 +118,7 @@ rotation_order = 3
 shadow_enabled = true
 sky_mode = 1
 
+[connection signal="timeout" from="Loading_Screen/VBoxContainer/Players_Connected_Label/Players_Connected_Update_Timer" to="." method="_on_players_connected_update_timer_timeout"]
+[connection signal="pressed" from="Loading_Screen/VBoxContainer/Host_Start/Host_Start_Button" to="." method="_on_host_start_button_pressed"]
 [connection signal="value_changed" from="Settings_Popup/VBoxContainer/Settings_Sensitivity" to="." method="_on_settings_sensitivity_value_changed"]
 [connection signal="pressed" from="Settings_Popup/VBoxContainer/Exit_Button" to="." method="_on_exit_button_pressed"]

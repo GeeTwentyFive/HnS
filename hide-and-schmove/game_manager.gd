@@ -43,6 +43,8 @@ var players: Dictionary[int, Player] = {}
 
 
 func start_game() -> void:
+	%Players_Connected_Update_Timer.stop()
+	
 	# Spawn local player
 	players[sns.local_id] = Player.new()
 	players[sns.local_id].is_local_player = true
@@ -54,6 +56,8 @@ func start_game() -> void:
 		if player_id == sns.local_id: continue
 		players[player_id] = Player.new()
 		add_child(players[player_id])
+	
+	%Loading_Screen.visible = false
 	
 	get_tree().paused = false
 
@@ -88,10 +92,13 @@ func _ready() -> void:
 	
 	sns = SimpleNetSync.create(args[0], PORT)
 	
+	%Players_Connected_Update_Timer.start()
+	
 	# (if '[PATH/TO/MAP.json]' is set then you are host)
 	if args.size() > 1: # Host:
 		local_state["host"] = true
 		host_id = sns.local_id
+		
 		var map_json := FileAccess.get_file_as_string(args[1])
 		if map_json.is_empty():
 			print("ERROR: Failed to load map at path " + args[1])
@@ -107,6 +114,8 @@ func _ready() -> void:
 			get_tree().quit(1)
 		local_state["host"]["map_data"] = compressed_map_json
 		local_state["map_loaded"] = true
+		
+		%Host_Start.visible = true
 	else: # Client:
 		pass
 		# TODO:
@@ -117,11 +126,13 @@ func _ready() -> void:
 		# - load map from sns.states[host_id]["host_data"]["map_data"] -> map_loaded = true
 		# - wait until sns.states[host_id]["host_data"]["game_started"]
 		start_game()
-	
-	# TODO: On host start button pressed (host-only button):
-		# - Wait until everyone's map_loaded == true
-		# - clear map_data
-		# - game_started = true
+
+func _on_host_start_button_pressed() -> void:
+	# TODO:
+	# - Wait until everyone's map_loaded == true
+	# - clear map_data
+	# - game_started = true
+	start_game()
 
 func _physics_process(_delta: float) -> void:
 	pass # TODO: Game management & networked state sync
@@ -140,6 +151,9 @@ func _input(event: InputEvent) -> void:
 
 
 #region CALLBACKS
+
+func _on_players_connected_update_timer_timeout() -> void:
+	%Players_Connected_Label.text = str(sns.states.keys().size())
 
 func _on_settings_sensitivity_value_changed(value: float) -> void:
 	settings["sensitivity"] = value
