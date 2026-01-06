@@ -161,7 +161,9 @@ func _on_host_start_button_pressed() -> void:
 	StartGame()
 
 func _physics_process(_delta: float) -> void:
-	# TODO: Players state sync
+	# TODO: Local Player -> local_state
+	
+	# TODO: sns.states -> players (exlcluding local)
 	
 	if local_state["host"]:
 		pass # TODO: Game management
