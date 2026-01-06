@@ -110,7 +110,7 @@ func _physics_process(delta: float) -> void:
 		
 		%Hook.mesh.surface_begin(Mesh.PRIMITIVE_LINES, hook_material)
 		%Hook.mesh.surface_add_vertex(Vector3.ZERO)
-		%Hook.mesh.surface_add_vertex(to_local(hook_point).rotated(Vector3.UP, yaw))
+		%Hook.mesh.surface_add_vertex(%Body.to_local(hook_point))
 		%Hook.mesh.surface_end()
 		
 		if last_hooked == false:
