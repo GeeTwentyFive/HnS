@@ -27,13 +27,12 @@ var alive: bool = true:
 			%Body.get_surface_override_material(0).albedo_color = Color(1.0, 1.0, 1.0, body_alpha)
 var is_seeker: bool = false:
 	set(x):
-		assert(alive, "'alive' must first be set as true before setting 'is_seeker'")
 		is_seeker = x
 		if is_seeker:
 			%Body.get_surface_override_material(0).albedo_color = Color(1.0, 0.0, 0.0, body_alpha)
 		else:
 			%Body.get_surface_override_material(0).albedo_color = Color(0.0, 0.0, 1.0, body_alpha)
-var last_caught_hider_id := 0
+var last_caught_hider: Player
 var seek_time := 0.0
 var last_alive_rounds := 0
 var jumped := false
@@ -82,9 +81,6 @@ var last_walljumped := walljumped
 @onready var hook_material = StandardMaterial3D.new()
 var last_hooked := hooked
 func _physics_process(delta: float) -> void:
-	if is_seeker:
-		seek_time += delta
-	
 	if jumped and not last_jumped:
 		%Jump_Sound.pitch_scale = 1.0
 		%Jump_Sound.play()
@@ -125,10 +121,26 @@ func _physics_process(delta: float) -> void:
 			get_tree().root.add_child(hook_point_sound)
 	last_hooked = hooked
 	
+	
 	if not is_local_player: return
 	
+	
 	if global_position.y < 0.0:
+		alive = false
 		died.emit()
+	
+	if not alive:
+		is_seeker = false
+	
+	if is_seeker:
+		for body in %Catch_Collider.get_overlapping_bodies():
+			if body is not Player: continue
+			if body.alive:
+				last_caught_hider = body
+				break
+		seek_time += delta
+	else:
+		pass # TODO: Check if caught -> alive = false & died.emit()
 	
 	var is_on_ground: bool = false
 	for body in %Floor_Collider.get_overlapping_bodies():
@@ -140,7 +152,9 @@ func _physics_process(delta: float) -> void:
 		if body == self: continue
 		is_at_wall = true
 	
+	
 	if pause_input: return
+	
 	
 	var movement_direction := Input.get_vector(
 		"Left",

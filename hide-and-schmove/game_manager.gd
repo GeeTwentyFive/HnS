@@ -129,6 +129,9 @@ func StartGame() -> void:
 	players[sns.local_id] = Player.new()
 	players[sns.local_id].is_local_player = true
 	players[sns.local_id].sensitivity = settings["sensitivity"]
+	players[sns.local_id].died.connect(func():
+		players[sns.local_id].position = hider_spawn
+	)
 	add_child(players[sns.local_id])
 	
 	# Spawn remote players
@@ -251,7 +254,7 @@ func _physics_process(_delta: float) -> void:
 	local_state["pitch"] = players[sns.local_id].pitch
 	local_state["alive"] = players[sns.local_id].alive
 	local_state["is_seeker"] = players[sns.local_id].is_seeker
-	local_state["last_caught_hider_id"] = players[sns.local_id].last_caught_hider_id
+	local_state["last_caught_hider_id"] = players.find_key(players[sns.local_id].last_caught_hider)
 	local_state["seek_time"] = players[sns.local_id].seek_time
 	local_state["last_alive_rounds"] = players[sns.local_id].last_alive_rounds
 	local_state["jumped"] = players[sns.local_id].jumped
@@ -278,7 +281,7 @@ func _physics_process(_delta: float) -> void:
 		remote_player.pitch = remote_player_state["pitch"]
 		remote_player.alive = remote_player_state["alive"]
 		remote_player.is_seeker = remote_player_state["is_seeker"]
-		remote_player.last_caught_hider_id = int(remote_player_state["last_caught_hider_id"])
+		remote_player.last_caught_hider = players[int(remote_player_state["last_caught_hider_id"])]
 		remote_player.seek_time = remote_player_state["seek_time"]
 		remote_player.last_alive_rounds = int(remote_player_state["last_alive_rounds"])
 		remote_player.jumped = remote_player_state["jumped"]
