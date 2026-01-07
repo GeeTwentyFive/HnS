@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Hide and Schmove"
-run/main_scene="uid://bljleymm2agus"
+run/main_scene="uid://d1vbnvnkmmkd5"
 config/features=PackedStringArray("4.5", "Forward Plus")
 run/max_fps=251
 boot_splash/bg_color=Color(0, 0, 0, 1)
@@ -26,6 +26,10 @@ window/size/resizable=false
 window/size/borderless=true
 window/stretch/mode="canvas_items"
 window/vsync/vsync_mode=0
+
+[editor]
+
+run/main_run_args="-- ::1 TEST_MAP.json"
 
 [input]
 

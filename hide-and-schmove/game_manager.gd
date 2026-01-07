@@ -3,7 +3,7 @@ extends Node
 
 const SETTINGS_PATH = "HnS_settings.json"
 const MAX_MAP_SIZE = 60000 # Since UDP packet limit is 65K
-const PORT = 55555
+const PORT = 55556 # TEMP; TEST
 const TEMP_RESULTS_FILE_NAME = "_HnS_RESULTS.json"
 @onready var JSON_ARRAY_VIEWER_PATH = "deps/JSONArrayViewer" + ".exe" if (OS.get_name() == "Windows") else ""
 
@@ -72,10 +72,10 @@ func LoadMap(map_json: String):
 				)
 				var material := StandardMaterial3D.new()
 				material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_DEPTH_PRE_PASS
-				material.albedo_color.r8 = int(map_object["data"]["Color R"])
-				material.albedo_color.g8 = int(map_object["data"]["Color G"])
-				material.albedo_color.b8 = int(map_object["data"]["Color B"])
-				material.albedo_color.a8 = int(map_object["data"]["Color A"])
+				#material.albedo_color.r8 = int(map_object["data"]["Color R"]) # TODO
+				#material.albedo_color.g8 = int(map_object["data"]["Color G"])
+				#material.albedo_color.b8 = int(map_object["data"]["Color B"])
+				#material.albedo_color.a8 = int(map_object["data"]["Color A"])
 				box_mesh.set_surface_override_material(0, material)
 				var collision_shape := CollisionShape3D.new()
 				collision_shape.shape = BoxShape3D.new()
@@ -155,6 +155,8 @@ func StartGame() -> void:
 func _ready() -> void:
 	get_tree().paused = true
 	
+	print("STARTED")
+	
 	# Generate user settings if they don't exist
 	if not FileAccess.file_exists(SETTINGS_PATH):
 		FileAccess.open(
@@ -174,6 +176,9 @@ func _ready() -> void:
 			FileAccess.WRITE
 		).store_string(JSON.stringify(settings, "\t"))
 	
+	print("SETTINGS LOAD:")
+	print(settings)
+	
 	local_state["name"] = settings["name"]
 	
 	var args := OS.get_cmdline_user_args()
@@ -181,7 +186,15 @@ func _ready() -> void:
 		OS.alert("USAGE: -- <SERVER_IP> [PATH/TO/MAP.json]")
 		get_tree().quit()
 	
+	print("PRE-CONNECT")
+	
 	sns = SimpleNetSync.create(args[0], PORT)
+	
+	while sns.states.is_empty():
+		sns.send(JSON.stringify(local_state))
+		OS.delay_msec(100)
+	
+	print(sns.states)
 	
 	%Players_Connected_Update_Timer.start()
 	
@@ -201,7 +214,7 @@ func _ready() -> void:
 		if map_json.length() > MAX_MAP_SIZE:
 			OS.alert("ERROR: Map data is too large")
 			get_tree().quit(1)
-		local_state["host"]["map_json"] = map_json
+		local_state["host_data"]["map_json"] = map_json
 		LoadMap(map_json)
 		local_state["map_loaded"] = true
 		
@@ -236,11 +249,13 @@ func _on_client_wait_for_host_timer_timeout() -> void:
 
 func _on_host_start_button_pressed() -> void:
 	var players_count := sns.states.keys().size()
+	print(players_count) # TEMP; TEST
 	var ready_players := 0
 	for client_id in sns.states.keys():
 		var client_state = JSON.parse_string(sns.states[client_id])
 		if client_state["map_loaded"]:
 			ready_players += 1
+	print(ready_players) # TEMP; TEST
 	if ready_players < players_count: return
 	
 	local_state["host_data"]["map_json"] = ""
