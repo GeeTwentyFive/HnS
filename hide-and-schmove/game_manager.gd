@@ -235,12 +235,57 @@ func _on_host_start_button_pressed() -> void:
 	StartGame()
 
 func _physics_process(_delta: float) -> void:
-	# TODO: Local Player -> local_state
+	# Synchronize local player state
+	local_state["pos"] = [
+		players[sns.local_id].position.x,
+		players[sns.local_id].position.y,
+		players[sns.local_id].position.z
+	]
+	local_state["yaw"] = players[sns.local_id].yaw
+	local_state["pitch"] = players[sns.local_id].pitch
+	local_state["is_seeker"] = players[sns.local_id].is_seeker
+	local_state["alive"] = players[sns.local_id].alive
+	local_state["seek_time"] = players[sns.local_id].seek_time
+	local_state["last_alive_rounds"] = players[sns.local_id].last_alive_rounds
+	local_state["jumped"] = players[sns.local_id].jumped
+	local_state["walljumped"] = players[sns.local_id].walljumped
+	local_state["slide_sound_playing"] = players[sns.local_id].slide_sound_playing
+	local_state["hooked"] = players[sns.local_id].hooked
+	local_state["hook_point"] = [
+		players[sns.local_id].hook_point.x,
+		players[sns.local_id].hook_point.y,
+		players[sns.local_id].hook_point.z
+	]
+	local_state["flashlight"] = players[sns.local_id].flashlight
 	
-	# TODO: sns.states -> players (exlcluding local)
+	# Synchronize remote players states
+	for player_id in players.keys():
+		if player_id == sns.local_id: continue
+		var remote_player := players[player_id]
+		var remote_player_state = JSON.parse_string(sns.states[player_id])
+		if remote_player_state == null: continue
+		remote_player.position.x = remote_player_state["pos"][0]
+		remote_player.position.x = remote_player_state["pos"][1]
+		remote_player.position.x = remote_player_state["pos"][2]
+		remote_player.yaw = remote_player_state["yaw"]
+		remote_player.pitch = remote_player_state["pitch"]
+		remote_player.is_seeker = remote_player_state["is_seeker"]
+		remote_player.alive = remote_player_state["alive"]
+		remote_player.seek_time = remote_player_state["seek_time"]
+		remote_player.last_alive_rounds = remote_player_state["last_alive_rounds"]
+		remote_player.jumped = remote_player_state["jumped"]
+		remote_player.walljumped = remote_player_state["walljumped"]
+		remote_player.slide_sound_playing = remote_player_state["slide_sound_playing"]
+		remote_player.hooked = remote_player_state["hooked"]
+		remote_player.hook_point.x = remote_player_state["hook_point"][0]
+		remote_player.hook_point.y = remote_player_state["hook_point"][1]
+		remote_player.hook_point.z = remote_player_state["hook_point"][2]
+		remote_player.flashlight = remote_player_state["flashlight"]
 	
 	if local_state["host"]:
 		pass # TODO: Game management
+		# ^ TODO:
+		# - ["host_data"]["current_seeker"] = id
 	
 	sns.send(JSON.stringify(local_state))
 

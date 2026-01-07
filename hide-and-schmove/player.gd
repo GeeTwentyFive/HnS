@@ -44,8 +44,8 @@ var hooked := false
 var hook_point := Vector3.ZERO
 var flashlight: bool = false:
 	set(x):
-		%Flashlight.visible = x
 		flashlight = x
+		%Flashlight.visible = x
 
 
 signal died
@@ -68,13 +68,14 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		yaw += event.screen_relative.x * sensitivity
 		yaw = fmod(yaw, TAU)
-		%Body.transform.basis = Basis()
-		%Body.rotate_object_local(Vector3.UP, -yaw)
-		
 		pitch += event.screen_relative.y * sensitivity
 		pitch = clampf(pitch, -PI/2, PI/2)
-		%Head.transform.basis = Basis()
-		%Head.rotate_object_local(Vector3.RIGHT, -pitch)
+
+func _process(_delta: float) -> void:
+	%Body.transform.basis = Basis()
+	%Body.rotate_object_local(Vector3.UP, -yaw)
+	%Head.transform.basis = Basis()
+	%Head.rotate_object_local(Vector3.RIGHT, -pitch)
 
 
 var last_jumped := jumped
