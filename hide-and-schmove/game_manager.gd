@@ -4,6 +4,8 @@ extends Node
 const SETTINGS_PATH = "HnS_settings.json"
 const MAX_MAP_SIZE = 60000 # Since UDP packet limit is 65K
 const PORT = 55555
+const TEMP_RESULTS_FILE_NAME = "_HnS_RESULTS.json"
+@onready var JSON_ARRAY_VIEWER_PATH = "JSONArrayViewer" + ".exe" if (OS.get_name() == "Windows") else ""
 
 
 var settings: Dictionary = {
@@ -26,8 +28,9 @@ var local_state := {
 	"host": false,
 	"host_data": {
 		"map_json": "",
-		"current_seeker": 0,
-		"game_started": false
+		"current_seeker": -1.0,
+		"game_started": false,
+		"game_ended": false
 	},
 	"map_loaded": false,
 	
@@ -49,6 +52,7 @@ var local_state := {
 }
 var host_id := -1
 var players: Dictionary[int, Player] = {}
+var current_seeker_id := -1
 
 
 func LoadMap(map_json: String):
@@ -174,7 +178,7 @@ func _ready() -> void:
 	
 	var args := OS.get_cmdline_user_args()
 	if args.is_empty():
-		print("USAGE: -- <SERVER_IP> [PATH/TO/MAP.json]")
+		OS.alert("USAGE: -- <SERVER_IP> [PATH/TO/MAP.json]")
 		get_tree().quit()
 	
 	sns = SimpleNetSync.create(args[0], PORT)
@@ -293,29 +297,74 @@ func _physics_process(_delta: float) -> void:
 		remote_player.hook_point.z = remote_player_state["hook_point"][2]
 		remote_player.flashlight = remote_player_state["flashlight"]
 	
-	var seeker = null
-	for player_id in players.keys():
-		if player_id == sns.local_id: continue
-		if players[player_id].is_seeker:
-			seeker = players[player_id]
-	if seeker != null:
-		# Handle getting caught by seeker
-		if seeker.last_caught_hider == players[sns.local_id]:
-			players[sns.local_id].alive = false
-			
-			# Increment last_alive_rounds if last alive in this round
-			var alive_hiders := 0
-			for player_id in players.keys():
-				if players[player_id].is_seeker: continue
-				if players[player_id].alive:
-					alive_hiders += 1
-			if alive_hiders == 0:
-				players[sns.local_id].last_alive_rounds += 1
+	# Handle game end
+	if sns.states[host_id]["host_data"]["game_ended"]:
+		var sorted_seek_times: Dictionary[float, int]
+		for player_id in players:
+			sorted_seek_times[players[player_id]["seek_time"]] = player_id
+		sorted_seek_times.sort()
+		
+		var players_points: Dictionary[int, int]
+		for i in range(sorted_seek_times.keys().size()):
+			players_points[sorted_seek_times[sorted_seek_times.keys()[i]]] = (
+				# player_count - seek_time_placement (starting from 1, not 0)
+				(players.size() - i+1) +
+				# + last_alive_rounds
+				players[sorted_seek_times[sorted_seek_times.keys()[i]]].last_alive_rounds
+			)
+		
+		var scoring_data: Array[Dictionary]
+		for seek_time in sorted_seek_times.keys():
+			scoring_data.append({
+				"name": players[sorted_seek_times[seek_time]].name,
+				"seek_time": seek_time,
+				"last_alive_rounds": players[sorted_seek_times[seek_time]].last_alive_rounds,
+				"points": players_points[sorted_seek_times[seek_time]]
+			})
+		var temp_results_file_path := OS.get_cache_dir().path_join(TEMP_RESULTS_FILE_NAME)
+		FileAccess.open(
+			temp_results_file_path,
+			FileAccess.WRITE
+		).store_string(JSON.stringify(scoring_data))
+		OS.create_process(JSON_ARRAY_VIEWER_PATH, [temp_results_file_path])
+		
+		get_tree().quit()
 	
+	var alive_hiders := 0
+	for player_id in players.keys():
+		if players[player_id].is_seeker: continue
+		if players[player_id].alive:
+			alive_hiders += 1
+	
+	if int(sns.states[host_id]["current_seeker"]) != -1:
+		if int(sns.states[host_id]["current_seeker"]) != current_seeker_id:
+			# ^ new round
+			if current_seeker_id == sns.local_id:
+				players[sns.local_id].position = seeker_spawn
+				players[sns.local_id].alive = true
+				players[sns.local_id].is_seeker = true
+			else:
+				players[sns.local_id].position = hider_spawn
+				players[sns.local_id].alive = true
+				players[sns.local_id].is_seeker = false
+		
+		current_seeker_id = int(sns.states[host_id]["current_seeker"])
+		
+		if current_seeker_id != sns.local_id:
+			var seeker := players[current_seeker_id]
+			if seeker.last_caught_hider == players[sns.local_id]:
+				if alive_hiders == 1:
+					players[sns.local_id].last_alive_rounds += 1
+				players[sns.local_id].alive = false
+	
+	# Host game management
 	if local_state["host"]:
-		pass # TODO: Game management
-		# ^ TODO:
-		# - ["host_data"]["current_seeker"] = next id
+		if alive_hiders == 0:
+			for i in range(players.keys().size()):
+				if players.keys()[i] == current_seeker_id:
+					if i == players.keys().size()-1:
+						local_state["host_data"]["game_ended"] = true
+					local_state["host_data"]["current_seeker"] = players.keys()[i+1]
 	
 	sns.send(JSON.stringify(local_state))
 
