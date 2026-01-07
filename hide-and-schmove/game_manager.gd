@@ -5,7 +5,7 @@ const SETTINGS_PATH = "HnS_settings.json"
 const MAX_MAP_SIZE = 60000 # Since UDP packet limit is 65K
 const PORT = 55555
 const TEMP_RESULTS_FILE_NAME = "_HnS_RESULTS.json"
-@onready var JSON_ARRAY_VIEWER_PATH = "JSONArrayViewer" + ".exe" if (OS.get_name() == "Windows") else ""
+@onready var JSON_ARRAY_VIEWER_PATH = "deps/JSONArrayViewer" + ".exe" if (OS.get_name() == "Windows") else ""
 
 
 var settings: Dictionary = {
