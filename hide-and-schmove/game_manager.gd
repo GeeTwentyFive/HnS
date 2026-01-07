@@ -293,6 +293,25 @@ func _physics_process(_delta: float) -> void:
 		remote_player.hook_point.z = remote_player_state["hook_point"][2]
 		remote_player.flashlight = remote_player_state["flashlight"]
 	
+	var seeker = null
+	for player_id in players.keys():
+		if player_id == sns.local_id: continue
+		if players[player_id].is_seeker:
+			seeker = players[player_id]
+	if seeker != null:
+		# Handle getting caught by seeker
+		if seeker.last_caught_hider == players[sns.local_id]:
+			players[sns.local_id].alive = false
+			
+			# Increment last_alive_rounds if last alive in this round
+			var alive_hiders := 0
+			for player_id in players.keys():
+				if players[player_id].is_seeker: continue
+				if players[player_id].alive:
+					alive_hiders += 1
+			if alive_hiders == 0:
+				players[sns.local_id].last_alive_rounds += 1
+	
 	if local_state["host"]:
 		pass # TODO: Game management
 		# ^ TODO:

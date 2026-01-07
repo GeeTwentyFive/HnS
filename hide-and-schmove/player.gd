@@ -25,6 +25,7 @@ var alive: bool = true:
 		alive = x
 		if not alive:
 			%Body.get_surface_override_material(0).albedo_color = Color(1.0, 1.0, 1.0, body_alpha)
+			died.emit()
 var is_seeker: bool = false:
 	set(x):
 		is_seeker = x
@@ -127,7 +128,6 @@ func _physics_process(delta: float) -> void:
 	
 	if global_position.y < 0.0:
 		alive = false
-		died.emit()
 	
 	if not alive:
 		is_seeker = false
@@ -139,10 +139,6 @@ func _physics_process(delta: float) -> void:
 				last_caught_hider = body
 				break
 		seek_time += delta
-	else:
-		pass
-		# TODO: Check if last alive in round (other than seeker) -> last_alive_rounds += 1
-		# TODO: Check if caught -> alive = false & died.emit()
 	
 	var is_on_ground: bool = false
 	for body in %Floor_Collider.get_overlapping_bodies():
