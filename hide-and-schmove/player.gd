@@ -12,6 +12,7 @@ const HOOK_POINT_SOUND = preload("res://Audio/impactSoft_heavy_000.ogg")
 
 # Local vars
 @export var is_local_player: bool = false
+@onready var body_alpha := LOCAL_PLAYER_BODY_TRANSPARENCY if is_local_player else 1.0
 var sensitivity: float = 0.01
 var pause_input: bool = false
 var move_speed := RUN_SPEED
@@ -19,22 +20,20 @@ var move_speed := RUN_SPEED
 # Networked vars
 var yaw := 0.0
 var pitch := 0.0
-var is_seeker: bool = false:
-	set(x):
-		is_seeker = x
-		var alpha := LOCAL_PLAYER_BODY_TRANSPARENCY if is_local_player else 1.0
-		if is_seeker:
-			%Body.get_surface_override_material(0).albedo_color = Color(1.0, 0.0, 0.0, alpha)
-		else:
-			%Body.get_surface_override_material(0).albedo_color = Color(0.0, 0.0, 1.0, alpha)
 var alive: bool = true:
 	set(x):
 		alive = x
-		if alive: is_seeker = is_seeker
-		else: # vvv (to maintain alpha) vvv
-			%Body.get_surface_override_material(0).albedo_color.r = 1.0
-			%Body.get_surface_override_material(0).albedo_color.g = 1.0
-			%Body.get_surface_override_material(0).albedo_color.b = 1.0
+		if not alive:
+			%Body.get_surface_override_material(0).albedo_color = Color(1.0, 1.0, 1.0, body_alpha)
+var is_seeker: bool = false:
+	set(x):
+		assert(alive, "'alive' must first be set as true before setting 'is_seeker'")
+		is_seeker = x
+		if is_seeker:
+			%Body.get_surface_override_material(0).albedo_color = Color(1.0, 0.0, 0.0, body_alpha)
+		else:
+			%Body.get_surface_override_material(0).albedo_color = Color(0.0, 0.0, 1.0, body_alpha)
+var last_caught_hider_id := 0
 var seek_time := 0.0
 var last_alive_rounds := 0
 var jumped := false

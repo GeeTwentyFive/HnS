@@ -27,14 +27,18 @@ var local_state := {
 	"host_data": {
 		"map_json": "",
 		"players_count": 0,
+		"seeker": 0,
 		"game_started": false
 	},
 	"map_loaded": false,
+	
+	# Members of Player object:
 	"pos": [0.0, 0.0, 0.0],
 	"yaw": 0.0,
 	"pitch": 0.0,
-	"is_seeker": false,
 	"alive": true,
+	"is_seeker": false,
+	"last_caught_hider_id": 0.0,
 	"seek_time": 0.0,
 	"last_alive_rounds": 0.0,
 	"jumped": false,
@@ -221,16 +225,16 @@ func _on_client_wait_for_host_timer_timeout() -> void:
 	StartGame()
 
 func _on_host_start_button_pressed() -> void:
-	local_state["host_data"]["players_count"] = sns.states.keys().size()
+	var players_count := sns.states.keys().size()
 	var ready_players := 0
 	for client_id in sns.states.keys():
 		var client_state = JSON.parse_string(sns.states[client_id])
 		if client_state["map_loaded"]:
 			ready_players += 1
-	if ready_players < local_state["host_data"]["players_count"]: return
-	
+	if ready_players < players_count: return
+	local_state["host_data"]["players_count"] = players_count
 	local_state["host_data"]["map_json"] = ""
-	
+	local_state["host_data"]["seeker"] = sns.states.keys()[0]
 	local_state["host_data"]["game_started"] = true
 	StartGame()
 
@@ -243,8 +247,9 @@ func _physics_process(_delta: float) -> void:
 	]
 	local_state["yaw"] = players[sns.local_id].yaw
 	local_state["pitch"] = players[sns.local_id].pitch
-	local_state["is_seeker"] = players[sns.local_id].is_seeker
 	local_state["alive"] = players[sns.local_id].alive
+	local_state["is_seeker"] = players[sns.local_id].is_seeker
+	local_state["last_caught_hider_id"] = players[sns.local_id].last_caught_hider_id
 	local_state["seek_time"] = players[sns.local_id].seek_time
 	local_state["last_alive_rounds"] = players[sns.local_id].last_alive_rounds
 	local_state["jumped"] = players[sns.local_id].jumped
@@ -269,10 +274,11 @@ func _physics_process(_delta: float) -> void:
 		remote_player.position.x = remote_player_state["pos"][2]
 		remote_player.yaw = remote_player_state["yaw"]
 		remote_player.pitch = remote_player_state["pitch"]
-		remote_player.is_seeker = remote_player_state["is_seeker"]
 		remote_player.alive = remote_player_state["alive"]
+		remote_player.is_seeker = remote_player_state["is_seeker"]
+		remote_player.last_caught_hider_id = int(remote_player_state["last_caught_hider_id"])
 		remote_player.seek_time = remote_player_state["seek_time"]
-		remote_player.last_alive_rounds = remote_player_state["last_alive_rounds"]
+		remote_player.last_alive_rounds = int(remote_player_state["last_alive_rounds"])
 		remote_player.jumped = remote_player_state["jumped"]
 		remote_player.walljumped = remote_player_state["walljumped"]
 		remote_player.slide_sound_playing = remote_player_state["slide_sound_playing"]
