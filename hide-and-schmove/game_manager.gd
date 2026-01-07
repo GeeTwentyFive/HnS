@@ -9,7 +9,13 @@ const PORT = 55555
 var settings: Dictionary = {
 	"name": "Player",
 	"sensitivity": 0.01
-}
+}:
+	set(x):
+		settings = x
+		FileAccess.open(
+			SETTINGS_PATH,
+			FileAccess.WRITE
+		).store_string(JSON.stringify(settings, "\t"))
 
 var hider_spawn := Vector3(0.0, 0.0, 0.0)
 var seeker_spawn := Vector3(0.0, 10.0, 0.0)
@@ -140,7 +146,7 @@ func _ready() -> void:
 		FileAccess.open(
 			SETTINGS_PATH,
 			FileAccess.WRITE
-		).store_string(JSON.stringify(settings))
+		).store_string(JSON.stringify(settings, "\t"))
 	
 	# Load settings
 	var settings_json := JSON.new()
@@ -152,7 +158,7 @@ func _ready() -> void:
 		FileAccess.open(
 			SETTINGS_PATH,
 			FileAccess.WRITE
-		).store_string(JSON.stringify(settings))
+		).store_string(JSON.stringify(settings, "\t"))
 	
 	local_state["name"] = settings["name"]
 	
@@ -244,6 +250,7 @@ func _input(event: InputEvent) -> void:
 			KEY_ESCAPE:
 				if not %Settings_Popup.visible:
 					players[sns.local_id].pause_input = true
+					%Settings_Name.text = local_state["name"]
 					%Settings_Sensitivity.set_value_no_signal(players[sns.local_id].sensitivity)
 					%Settings_Popup.show()
 				else:
@@ -255,6 +262,10 @@ func _input(event: InputEvent) -> void:
 
 func _on_players_connected_update_timer_timeout() -> void:
 	%Players_Connected_Label.text = str(sns.states.keys().size())
+
+func _on_settings_name_text_submitted(new_text: String) -> void:
+	settings["name"] = new_text
+	local_state["name"] = new_text
 
 func _on_settings_sensitivity_value_changed(value: float) -> void:
 	settings["sensitivity"] = value
