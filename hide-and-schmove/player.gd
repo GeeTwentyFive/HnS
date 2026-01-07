@@ -140,7 +140,9 @@ func _physics_process(delta: float) -> void:
 				break
 		seek_time += delta
 	else:
-		pass # TODO: Check if caught -> alive = false & died.emit()
+		pass
+		# TODO: Check if last alive in round (other than seeker) -> last_alive_rounds += 1
+		# TODO: Check if caught -> alive = false & died.emit()
 	
 	var is_on_ground: bool = false
 	for body in %Floor_Collider.get_overlapping_bodies():
