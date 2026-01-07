@@ -26,8 +26,7 @@ var local_state := {
 	"host": false,
 	"host_data": {
 		"map_json": "",
-		"players_count": 0,
-		"seeker": 0,
+		"current_seeker": 0,
 		"game_started": false
 	},
 	"map_loaded": false,
@@ -138,6 +137,10 @@ func StartGame() -> void:
 		players[player_id] = Player.new()
 		add_child(players[player_id])
 	
+	if local_state["host"]:
+		local_state["host_data"]["current_seeker"] = players.keys()[0]
+		local_state["host_data"]["game_started"] = true
+	
 	%Loading_Screen.visible = false
 	
 	get_tree().paused = false
@@ -232,10 +235,9 @@ func _on_host_start_button_pressed() -> void:
 		if client_state["map_loaded"]:
 			ready_players += 1
 	if ready_players < players_count: return
-	local_state["host_data"]["players_count"] = players_count
+	
 	local_state["host_data"]["map_json"] = ""
-	local_state["host_data"]["seeker"] = sns.states.keys()[0]
-	local_state["host_data"]["game_started"] = true
+	
 	StartGame()
 
 func _physics_process(_delta: float) -> void:
@@ -291,7 +293,7 @@ func _physics_process(_delta: float) -> void:
 	if local_state["host"]:
 		pass # TODO: Game management
 		# ^ TODO:
-		# - ["host_data"]["current_seeker"] = id
+		# - ["host_data"]["current_seeker"] = next id
 	
 	sns.send(JSON.stringify(local_state))
 
