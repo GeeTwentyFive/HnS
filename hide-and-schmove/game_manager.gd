@@ -51,6 +51,7 @@ var seeker_spawn := Vector3(0.0, 10.0, 0.0)
 @onready var local_player := Player.new()
 var map_loaded := false
 var remote_players: Dictionary[int, Player] = {}
+var remote_players_stats: Array[Dictionary] = []
 
 
 func LoadMap(map_json: String):
@@ -250,15 +251,16 @@ func _process(_delta: float) -> void:
 					remote_players.erase(player_id)
 				
 				PacketType.PLAYER_STATS:
-					var player_id := received_data[1]
-					
-					remote_players[player_id].name = ""
+					var player_name := ""
 					for c in range(64):
 						if received_data[2+c] == 0: break
-						remote_players[player_id].name += char(received_data[2+c])
-					remote_players[player_id].set_meta("seek_time", received_data.decode_float(66))
-					remote_players[player_id].set_meta("last_alive_rounds", received_data.decode_float(70))
-					remote_players[player_id].set_meta("points", received_data.decode_float(74))
+						player_name += char(received_data[2+c])
+					remote_players_stats.append({
+						"name": player_name,
+						"seek_time": received_data.decode_float(66),
+						"last_alive_rounds": received_data.decode_float(70),
+						"points": received_data.decode_float(74)
+					})
 				
 				
 				PacketType.CONTROL_MAP_DATA:
@@ -271,7 +273,14 @@ func _process(_delta: float) -> void:
 					get_tree().paused = false
 				
 				PacketType.CONTROL_GAME_END:
-					pass # TODO: file -> JSONArrayViewer
+					var temp_results_file_path := OS.get_cache_dir().path_join(TEMP_RESULTS_FILE_NAME)
+					FileAccess.open(
+						temp_results_file_path,
+						FileAccess.WRITE
+					).store_string(JSON.stringify(remote_players_stats))
+					OS.create_process(JSON_ARRAY_VIEWER_PATH, [temp_results_file_path])
+					
+					get_tree().quit(0)
 
 func _physics_process(_delta: float) -> void:
 	# Synchronize local player state
@@ -298,7 +307,11 @@ func _physics_process(_delta: float) -> void:
 	server.send(0, sync_packet, 0)
 
 func _on_ready_button_pressed() -> void:
-	pass # TODO: Send ready packet
+	var ready_packet: PackedByteArray
+	ready_packet.resize(1)
+	ready_packet.encode_u8(0, PacketType.PLAYER_READY)
+	server.send(0, ready_packet, 0)
+	%Ready_Button.disabled = true
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
