@@ -9,7 +9,6 @@ const TEMP_RESULTS_FILE_NAME = "_HnS_RESULTS.json"
 
 
 enum PacketType {
-	PLAYER_CONNECTED,
 	PLAYER_SYNC,
 	PLAYER_SET_NAME,
 	PLAYER_READY,
@@ -222,10 +221,44 @@ func _process(_delta: float) -> void:
 			var received_data: PackedByteArray = packet_data[2]
 			match received_data[0]:
 				PacketType.PLAYER_SYNC:
-					pass # TODO
+					var player_id := received_data[1]
+					
+					if player_id not in remote_players.keys():
+						remote_players[received_data[1]] = Player.new()
+						add_child(remote_players[received_data[1]])
+					
+					remote_players[player_id].position.x = received_data.decode_float(2)
+					remote_players[player_id].position.y = received_data.decode_float(6)
+					remote_players[player_id].position.z = received_data.decode_float(10)
+					remote_players[player_id].yaw = received_data.decode_float(14)
+					remote_players[player_id].pitch = received_data.decode_float(18)
+					var player_state_flags := received_data[22]
+					remote_players[player_id].alive = (player_state_flags & PlayerStateFlags.ALIVE) > 0
+					remote_players[player_id].is_seeker = (player_state_flags & PlayerStateFlags.IS_SEEKER) > 0
+					remote_players[player_id].jumped = (player_state_flags & PlayerStateFlags.JUMPED) > 0
+					remote_players[player_id].walljumped = (player_state_flags & PlayerStateFlags.WALLJUMPED) > 0
+					remote_players[player_id].sliding = (player_state_flags & PlayerStateFlags.SLIDING) > 0
+					remote_players[player_id].flashlight = (player_state_flags & PlayerStateFlags.FLASHLIGHT) > 0
+					remote_players[player_id].hook_point.x = received_data.decode_float(23)
+					remote_players[player_id].hook_point.y = received_data.decode_float(27)
+					remote_players[player_id].hook_point.z = received_data.decode_float(31)
+				
+				PacketType.PLAYER_DISCONNECTED:
+					var player_id := received_data[1]
+					
+					remote_players[player_id].queue_free()
+					remote_players.erase(player_id)
 				
 				PacketType.PLAYER_STATS:
-					pass # TODO
+					var player_id := received_data[1]
+					
+					remote_players[player_id].name = ""
+					for c in range(64):
+						if received_data[2+c] == 0: break
+						remote_players[player_id].name += char(received_data[2+c])
+					remote_players[player_id].set_meta("seek_time", received_data.decode_float(66))
+					remote_players[player_id].set_meta("last_alive_rounds", received_data.decode_float(70))
+					remote_players[player_id].set_meta("points", received_data.decode_float(74))
 				
 				
 				PacketType.CONTROL_MAP_DATA:
