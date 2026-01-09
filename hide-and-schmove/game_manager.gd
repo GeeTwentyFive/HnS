@@ -2,10 +2,34 @@ extends Node
 
 
 const SETTINGS_PATH = "HnS_settings.json"
-const MAX_MAP_SIZE = 60000 # Since UDP packet limit is 65K
-const PORT = 55556 # TEMP; TEST
+const PORT = 55555
+const CONNECT_TIMEOUT = 5000
 const TEMP_RESULTS_FILE_NAME = "_HnS_RESULTS.json"
 @onready var JSON_ARRAY_VIEWER_PATH = "deps/JSONArrayViewer" + ".exe" if (OS.get_name() == "Windows") else ""
+
+
+enum PacketType {
+	PLAYER_CONNECTED,
+	PLAYER_SYNC,
+	PLAYER_SET_NAME,
+	PLAYER_READY,
+	PLAYER_HIDER_CAUGHT,
+	PLAYER_STATS,
+	PLAYER_DISCONNECTED,
+	
+	CONTROL_MAP_DATA,
+	CONTROL_GAME_START,
+	CONTROL_GAME_END
+}
+
+enum PlayerStateFlags {
+	ALIVE = 1 << 0,
+	IS_SEEKER = 1 << 1,
+	JUMPED = 1 << 2,
+	WALLJUMPED = 1 << 3,
+	SLIDING = 1 << 4,
+	FLASHLIGHT = 1 << 5
+}
 
 
 var settings: Dictionary = {
@@ -19,40 +43,15 @@ var settings: Dictionary = {
 			FileAccess.WRITE
 		).store_string(JSON.stringify(settings, "\t"))
 
+var client: ENetConnection
+var server: ENetPacketPeer
+
 var hider_spawn := Vector3(0.0, 0.0, 0.0)
 var seeker_spawn := Vector3(0.0, 10.0, 0.0)
 
-var sns: SimpleNetSync
-var local_state := {
-	"name": "",
-	"host": false,
-	"host_data": {
-		"map_json": "",
-		"current_seeker": -1.0,
-		"game_started": false,
-		"game_ended": false
-	},
-	"map_loaded": false,
-	
-	# Members of Player object:
-	"pos": [0.0, 0.0, 0.0],
-	"yaw": 0.0,
-	"pitch": 0.0,
-	"alive": true,
-	"is_seeker": false,
-	"last_caught_hider_id": 0.0,
-	"seek_time": 0.0,
-	"last_alive_rounds": 0.0,
-	"jumped": false,
-	"walljumped": false,
-	"slide_sound_playing": false,
-	"hooked": false,
-	"hook_point": [0.0, 0.0, 0.0],
-	"flashlight": false
-}
-var host_id := -1
-var players: Dictionary[int, Player] = {}
-var current_seeker_id := -1
+@onready var local_player := Player.new()
+var map_loaded := false
+var remote_players: Dictionary[int, Player] = {}
 
 
 func LoadMap(map_json: String):
@@ -72,10 +71,10 @@ func LoadMap(map_json: String):
 				)
 				var material := StandardMaterial3D.new()
 				material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_DEPTH_PRE_PASS
-				#material.albedo_color.r8 = int(map_object["data"]["Color R"]) # TODO
-				#material.albedo_color.g8 = int(map_object["data"]["Color G"])
-				#material.albedo_color.b8 = int(map_object["data"]["Color B"])
-				#material.albedo_color.a8 = int(map_object["data"]["Color A"])
+				material.albedo_color.r8 = int(map_object["data"]["Color R"]) # TODO
+				material.albedo_color.g8 = int(map_object["data"]["Color G"])
+				material.albedo_color.b8 = int(map_object["data"]["Color B"])
+				material.albedo_color.a8 = int(map_object["data"]["Color A"])
 				box_mesh.set_surface_override_material(0, material)
 				var collision_shape := CollisionShape3D.new()
 				collision_shape.shape = BoxShape3D.new()
@@ -126,36 +125,26 @@ func LoadMap(map_json: String):
 					map_object["pos"][2]
 				)
 
-func StartGame() -> void:
-	%Players_Connected_Update_Timer.stop()
-	
-	# Spawn local player
-	players[sns.local_id] = Player.new()
-	players[sns.local_id].is_local_player = true
-	players[sns.local_id].sensitivity = settings["sensitivity"]
-	players[sns.local_id].died.connect(func():
-		players[sns.local_id].position = hider_spawn
-	)
-	add_child(players[sns.local_id])
-	
-	# Spawn remote players
-	for player_id in sns.states.keys():
-		if player_id == sns.local_id: continue
-		players[player_id] = Player.new()
-		add_child(players[player_id])
-	
-	if local_state["host"]:
-		local_state["host_data"]["current_seeker"] = players.keys()[0]
-		local_state["host_data"]["game_started"] = true
-	
-	%Loading_Screen.visible = false
-	
-	get_tree().paused = false
+#func StartGame() -> void:
+	#%Players_Connected_Update_Timer.stop()
+	#
+	## Spawn local player
+	#add_child(local_player)
+	#
+	## Spawn remote players
+	#for player_id in sns.states.keys():
+		#if player_id == sns.local_id: continue
+		#players[player_id] = Player.new()
+		#add_child(players[player_id])
+	#
+	#%Loading_Screen.visible = false
+	#
+	#get_tree().paused = false
 
 func _ready() -> void:
 	get_tree().paused = true
 	
-	print("STARTED")
+	local_player.is_local_player = true
 	
 	# Generate user settings if they don't exist
 	if not FileAccess.file_exists(SETTINGS_PATH):
@@ -176,116 +165,101 @@ func _ready() -> void:
 			FileAccess.WRITE
 		).store_string(JSON.stringify(settings, "\t"))
 	
-	print("SETTINGS LOAD:")
-	print(settings)
-	
-	local_state["name"] = settings["name"]
+	local_player.name = settings["name"]
+	local_player.sensitivity = settings["sensitivity"]
 	
 	var args := OS.get_cmdline_user_args()
 	if args.is_empty():
-		OS.alert("USAGE: -- <SERVER_IP> [PATH/TO/MAP.json]")
-		get_tree().quit()
+		OS.alert("USAGE: -- <SERVER_IP>")
+		get_tree().quit(0)
 	
-	print("PRE-CONNECT")
+	client = ENetConnection.new()
+	if client.create_host(1, 1) != OK:
+		OS.alert("Failed to create ENet host")
+		get_tree().quit(1)
+	server = client.connect_to_host(args[0], PORT, 1)
+	if client.service(CONNECT_TIMEOUT)[0] != ENetConnection.EventType.EVENT_CONNECT:
+		OS.alert("Failed to connect to server")
 	
-	sns = SimpleNetSync.create(args[0], PORT)
+	var initial_sync_packet: PackedByteArray
+	initial_sync_packet.resize(1 + 1 + 4*3 + 4 + 4 + 1 + 4*3)
+	initial_sync_packet.encode_u8(0, PacketType.PLAYER_SYNC)
+	initial_sync_packet.encode_u8(1, -1)
+	initial_sync_packet.encode_float(2, local_player.position.x)
+	initial_sync_packet.encode_float(6, local_player.position.y)
+	initial_sync_packet.encode_float(10, local_player.position.z)
+	initial_sync_packet.encode_float(14, local_player.yaw)
+	initial_sync_packet.encode_float(18, local_player.pitch)
+	var player_state_flags := 0
+	player_state_flags |= (1 if local_player.alive else 0) << 0
+	player_state_flags |= (1 if local_player.is_seeker else 0) << 1
+	player_state_flags |= (1 if local_player.jumped else 0) << 2
+	player_state_flags |= (1 if local_player.walljumped else 0) << 3
+	player_state_flags |= (1 if local_player.sliding else 0) << 4
+	player_state_flags |= (1 if local_player.flashlight else 0) << 5
+	initial_sync_packet.encode_u8(22, player_state_flags)
+	initial_sync_packet.encode_float(23, local_player.hook_point.x)
+	initial_sync_packet.encode_float(27, local_player.hook_point.y)
+	initial_sync_packet.encode_float(31, local_player.hook_point.z)
+	server.send(0, initial_sync_packet, ENetPacketPeer.FLAG_RELIABLE)
 	
-	while sns.states.is_empty():
-		sns.send(JSON.stringify(local_state))
-		OS.delay_msec(100)
-	
-	print(sns.states)
+	var set_name_packet: PackedByteArray
+	set_name_packet.resize(1)
+	set_name_packet.encode_u8(0, PacketType.PLAYER_SET_NAME)
+	set_name_packet.append_array(local_player.name.to_ascii_buffer())
+	server.send(0, set_name_packet, ENetPacketPeer.FLAG_RELIABLE)
 	
 	%Players_Connected_Update_Timer.start()
-	
-	# (if '[PATH/TO/MAP.json]' is set then you are host)
-	if args.size() > 1: # Host:
-		local_state["host"] = true
-		host_id = sns.local_id
-		
-		var map_json := FileAccess.get_file_as_string(args[1])
-		if map_json.is_empty():
-			OS.alert(
-				"ERROR: Failed to load map at path " + args[1] + "\n" +
-				"^ FileAccess Error: " + str(FileAccess.get_open_error())
-			)
-			get_tree().quit(1)
-		map_json = map_json.strip_escapes().remove_chars(" ")
-		if map_json.length() > MAX_MAP_SIZE:
-			OS.alert("ERROR: Map data is too large")
-			get_tree().quit(1)
-		local_state["host_data"]["map_json"] = map_json
-		LoadMap(map_json)
-		local_state["map_loaded"] = true
-		
-		%Host_Start.visible = true
-	else: # Client:
-		for player_id in sns.states.keys():
-			if JSON.parse_string(sns.states[player_id])["host_data"]["game_started"]:
-				OS.alert("Game already started")
-				get_tree().quit()
-		
-		%Client_Wait_For_Host_Timer.start()
 
-func _on_client_wait_for_host_timer_timeout() -> void:
-	if host_id == -1:
-		for player_id in sns.states.keys():
-			var player_state = JSON.parse_string(sns.states[player_id])
-			if player_state["host"]:
-				host_id = player_id
-	if host_id == -1: return
-	
-	var host_state = JSON.parse_string(sns.states[host_id])
-	
-	if not local_state["map_loaded"]:
-		if not host_state["map_loaded"]: return
-		LoadMap(host_state["host_data"]["map_json"])
-		local_state["map_loaded"] = true
-	
-	if not host_state["host_data"]["game_started"]: return
-	
-	%Client_Wait_For_Host_Timer.stop()
-	StartGame()
-
-func _on_host_start_button_pressed() -> void:
-	var players_count := sns.states.keys().size()
-	print(players_count) # TEMP; TEST
-	var ready_players := 0
-	for client_id in sns.states.keys():
-		var client_state = JSON.parse_string(sns.states[client_id])
-		if client_state["map_loaded"]:
-			ready_players += 1
-	print(ready_players) # TEMP; TEST
-	if ready_players < players_count: return
-	
-	local_state["host_data"]["map_json"] = ""
-	
-	StartGame()
+func _process(_delta: float) -> void:
+	var packet_data = client.service()
+	match packet_data[0]:
+		ENetConnection.EventType.EVENT_DISCONNECT:
+			OS.alert("Disconnected from server")
+			get_tree().quit(0)
+		
+		ENetConnection.EventType.EVENT_RECEIVE:
+			var received_data: PackedByteArray = packet_data[2]
+			match received_data[0]:
+				PacketType.PLAYER_SYNC:
+					pass # TODO
+				
+				PacketType.PLAYER_STATS:
+					pass # TODO
+				
+				
+				PacketType.CONTROL_MAP_DATA:
+					pass # TODO
+				
+				PacketType.CONTROL_GAME_START:
+					pass # TODO
+				
+				PacketType.CONTROL_GAME_END:
+					pass # TODO
 
 func _physics_process(_delta: float) -> void:
 	# Synchronize local player state
-	local_state["pos"] = [
-		players[sns.local_id].position.x,
-		players[sns.local_id].position.y,
-		players[sns.local_id].position.z
-	]
-	local_state["yaw"] = players[sns.local_id].yaw
-	local_state["pitch"] = players[sns.local_id].pitch
-	local_state["alive"] = players[sns.local_id].alive
-	local_state["is_seeker"] = players[sns.local_id].is_seeker
-	local_state["last_caught_hider_id"] = players.find_key(players[sns.local_id].last_caught_hider)
-	local_state["seek_time"] = players[sns.local_id].seek_time
-	local_state["last_alive_rounds"] = players[sns.local_id].last_alive_rounds
-	local_state["jumped"] = players[sns.local_id].jumped
-	local_state["walljumped"] = players[sns.local_id].walljumped
-	local_state["slide_sound_playing"] = players[sns.local_id].slide_sound_playing
-	local_state["hooked"] = players[sns.local_id].hooked
-	local_state["hook_point"] = [
-		players[sns.local_id].hook_point.x,
-		players[sns.local_id].hook_point.y,
-		players[sns.local_id].hook_point.z
-	]
-	local_state["flashlight"] = players[sns.local_id].flashlight
+	var sync_packet: PackedByteArray
+	sync_packet.resize(1 + 1 + 4*3 + 4 + 4 + 1 + 4*3)
+	sync_packet.encode_u8(0, PacketType.PLAYER_SYNC)
+	sync_packet.encode_u8(1, -1)
+	sync_packet.encode_float(2, local_player.position.x)
+	sync_packet.encode_float(6, local_player.position.y)
+	sync_packet.encode_float(10, local_player.position.z)
+	sync_packet.encode_float(14, local_player.yaw)
+	sync_packet.encode_float(18, local_player.pitch)
+	var player_state_flags := 0
+	player_state_flags |= (1 if local_player.alive else 0) << 0
+	player_state_flags |= (1 if local_player.is_seeker else 0) << 1
+	player_state_flags |= (1 if local_player.jumped else 0) << 2
+	player_state_flags |= (1 if local_player.walljumped else 0) << 3
+	player_state_flags |= (1 if local_player.sliding else 0) << 4
+	player_state_flags |= (1 if local_player.flashlight else 0) << 5
+	sync_packet.encode_u8(22, player_state_flags)
+	sync_packet.encode_float(23, local_player.hook_point.x)
+	sync_packet.encode_float(27, local_player.hook_point.y)
+	sync_packet.encode_float(31, local_player.hook_point.z)
+	server.send(0, sync_packet, 0)
 	
 	# Synchronize remote players states
 	for player_id in players.keys():
@@ -343,7 +317,7 @@ func _physics_process(_delta: float) -> void:
 		).store_string(JSON.stringify(scoring_data))
 		OS.create_process(JSON_ARRAY_VIEWER_PATH, [temp_results_file_path])
 		
-		get_tree().quit()
+		get_tree().quit(0)
 	
 	var alive_hiders := 0
 	for player_id in players.keys():
@@ -383,34 +357,36 @@ func _physics_process(_delta: float) -> void:
 	
 	sns.send(JSON.stringify(local_state))
 
+func _on_ready_button_pressed() -> void:
+	pass # TODO
+
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
 			KEY_ESCAPE:
 				if not %Settings_Popup.visible:
-					players[sns.local_id].pause_input = true
-					%Settings_Name.text = local_state["name"]
-					%Settings_Sensitivity.set_value_no_signal(players[sns.local_id].sensitivity)
+					local_player.pause_input = true
+					%Settings_Name.text = local_player.name
+					%Settings_Sensitivity.set_value_no_signal(local_player.sensitivity)
 					%Settings_Popup.show()
 				else:
 					%Settings_Popup.hide()
-					players[sns.local_id].pause_input = false
+					local_player.pause_input = false
 
 
 #region CALLBACKS
 
 func _on_players_connected_update_timer_timeout() -> void:
-	%Players_Connected_Label.text = str(sns.states.keys().size())
+	%Players_Connected_Label.text = str(remote_players.keys().size())
 
 func _on_settings_name_text_submitted(new_text: String) -> void:
 	settings["name"] = new_text
-	local_state["name"] = new_text
 
 func _on_settings_sensitivity_value_changed(value: float) -> void:
 	settings["sensitivity"] = value
-	players[sns.local_id].sensitivity = value
+	local_player.sensitivity = value
 
 func _on_exit_button_pressed() -> void:
-	get_tree().quit()
+	get_tree().quit(0)
 
 #endregion CALLBACKS

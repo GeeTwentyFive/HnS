@@ -33,13 +33,9 @@ var is_seeker: bool = false:
 			%Body.get_surface_override_material(0).albedo_color = Color(1.0, 0.0, 0.0, body_alpha)
 		else:
 			%Body.get_surface_override_material(0).albedo_color = Color(0.0, 0.0, 1.0, body_alpha)
-var last_caught_hider: Player
-var seek_time := 0.0
-var last_alive_rounds := 0
 var jumped := false
 var walljumped := false
-var slide_sound_playing := false
-var hooked := false
+var sliding := false
 var hook_point := Vector3.ZERO
 var flashlight: bool = false:
 	set(x):
