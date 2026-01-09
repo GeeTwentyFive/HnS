@@ -57,7 +57,7 @@ func LoadMap(map_json: String):
 	var map_data = JSON.parse_string(map_json)
 	if map_data == null:
 		OS.alert("ERROR: Failed to load map")
-		return
+		get_tree().quit(1)
 	for map_object in map_data:
 		match map_object["type"].get_basename():
 			"Box":
@@ -262,13 +262,16 @@ func _process(_delta: float) -> void:
 				
 				
 				PacketType.CONTROL_MAP_DATA:
-					pass # TODO
+					received_data.remove_at(0)
+					LoadMap(received_data.get_string_from_ascii())
+					map_loaded = true
+					%Ready_Button.disabled = false
 				
 				PacketType.CONTROL_GAME_START:
-					pass # TODO
+					get_tree().paused = false
 				
 				PacketType.CONTROL_GAME_END:
-					pass # TODO
+					pass # TODO: file -> JSONArrayViewer
 
 func _physics_process(_delta: float) -> void:
 	# Synchronize local player state
@@ -293,105 +296,9 @@ func _physics_process(_delta: float) -> void:
 	sync_packet.encode_float(27, local_player.hook_point.y)
 	sync_packet.encode_float(31, local_player.hook_point.z)
 	server.send(0, sync_packet, 0)
-	
-	# Synchronize remote players states
-	for player_id in players.keys():
-		if player_id == sns.local_id: continue
-		var remote_player := players[player_id]
-		var remote_player_state = JSON.parse_string(sns.states[player_id])
-		if remote_player_state == null: continue
-		remote_player.position.x = remote_player_state["pos"][0]
-		remote_player.position.x = remote_player_state["pos"][1]
-		remote_player.position.x = remote_player_state["pos"][2]
-		remote_player.yaw = remote_player_state["yaw"]
-		remote_player.pitch = remote_player_state["pitch"]
-		remote_player.alive = remote_player_state["alive"]
-		remote_player.is_seeker = remote_player_state["is_seeker"]
-		remote_player.last_caught_hider = players[int(remote_player_state["last_caught_hider_id"])]
-		remote_player.seek_time = remote_player_state["seek_time"]
-		remote_player.last_alive_rounds = int(remote_player_state["last_alive_rounds"])
-		remote_player.jumped = remote_player_state["jumped"]
-		remote_player.walljumped = remote_player_state["walljumped"]
-		remote_player.slide_sound_playing = remote_player_state["slide_sound_playing"]
-		remote_player.hooked = remote_player_state["hooked"]
-		remote_player.hook_point.x = remote_player_state["hook_point"][0]
-		remote_player.hook_point.y = remote_player_state["hook_point"][1]
-		remote_player.hook_point.z = remote_player_state["hook_point"][2]
-		remote_player.flashlight = remote_player_state["flashlight"]
-	
-	# Handle game end
-	if sns.states[host_id]["host_data"]["game_ended"]:
-		var sorted_seek_times: Dictionary[float, int]
-		for player_id in players:
-			sorted_seek_times[players[player_id]["seek_time"]] = player_id
-		sorted_seek_times.sort()
-		
-		var players_points: Dictionary[int, int]
-		for i in range(sorted_seek_times.keys().size()):
-			players_points[sorted_seek_times[sorted_seek_times.keys()[i]]] = (
-				# player_count - seek_time_placement (starting from 1, not 0)
-				(players.size() - i+1) +
-				# + last_alive_rounds
-				players[sorted_seek_times[sorted_seek_times.keys()[i]]].last_alive_rounds
-			)
-		
-		var scoring_data: Array[Dictionary]
-		for seek_time in sorted_seek_times.keys():
-			scoring_data.append({
-				"name": players[sorted_seek_times[seek_time]].name,
-				"seek_time": seek_time,
-				"last_alive_rounds": players[sorted_seek_times[seek_time]].last_alive_rounds,
-				"points": players_points[sorted_seek_times[seek_time]]
-			})
-		var temp_results_file_path := OS.get_cache_dir().path_join(TEMP_RESULTS_FILE_NAME)
-		FileAccess.open(
-			temp_results_file_path,
-			FileAccess.WRITE
-		).store_string(JSON.stringify(scoring_data))
-		OS.create_process(JSON_ARRAY_VIEWER_PATH, [temp_results_file_path])
-		
-		get_tree().quit(0)
-	
-	var alive_hiders := 0
-	for player_id in players.keys():
-		if players[player_id].is_seeker: continue
-		if players[player_id].alive:
-			alive_hiders += 1
-	
-	if int(sns.states[host_id]["current_seeker"]) != -1:
-		if int(sns.states[host_id]["current_seeker"]) != current_seeker_id:
-			# ^ new round
-			if current_seeker_id == sns.local_id:
-				players[sns.local_id].position = seeker_spawn
-				players[sns.local_id].alive = true
-				players[sns.local_id].is_seeker = true
-			else:
-				players[sns.local_id].position = hider_spawn
-				players[sns.local_id].alive = true
-				players[sns.local_id].is_seeker = false
-		
-		current_seeker_id = int(sns.states[host_id]["current_seeker"])
-		
-		if current_seeker_id != sns.local_id:
-			var seeker := players[current_seeker_id]
-			if seeker.last_caught_hider == players[sns.local_id]:
-				if alive_hiders == 1:
-					players[sns.local_id].last_alive_rounds += 1
-				players[sns.local_id].alive = false
-	
-	# Host game management
-	if local_state["host"]:
-		if alive_hiders == 0:
-			for i in range(players.keys().size()):
-				if players.keys()[i] == current_seeker_id:
-					if i == players.keys().size()-1:
-						local_state["host_data"]["game_ended"] = true
-					local_state["host_data"]["current_seeker"] = players.keys()[i+1]
-	
-	sns.send(JSON.stringify(local_state))
 
 func _on_ready_button_pressed() -> void:
-	pass # TODO
+	pass # TODO: Send ready packet
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
