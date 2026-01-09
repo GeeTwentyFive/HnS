@@ -18,6 +18,7 @@ enum PacketType {
 	
 	CONTROL_MAP_DATA,
 	CONTROL_GAME_START,
+	CONTROL_SET_PLAYER_DATA,
 	CONTROL_GAME_END
 }
 
@@ -271,6 +272,23 @@ func _process(_delta: float) -> void:
 				
 				PacketType.CONTROL_GAME_START:
 					get_tree().paused = false
+				
+				PacketType.CONTROL_SET_PLAYER_DATA:
+					local_player.position.x = received_data.decode_float(1)
+					local_player.position.y = received_data.decode_float(5)
+					local_player.position.z = received_data.decode_float(9)
+					local_player.yaw = received_data.decode_float(13)
+					local_player.pitch = received_data.decode_float(17)
+					var player_state_flags := received_data[21]
+					local_player.alive = (player_state_flags & PlayerStateFlags.ALIVE) > 0
+					local_player.is_seeker = (player_state_flags & PlayerStateFlags.IS_SEEKER) > 0
+					local_player.jumped = (player_state_flags & PlayerStateFlags.JUMPED) > 0
+					local_player.walljumped = (player_state_flags & PlayerStateFlags.WALLJUMPED) > 0
+					local_player.sliding = (player_state_flags & PlayerStateFlags.SLIDING) > 0
+					local_player.flashlight = (player_state_flags & PlayerStateFlags.FLASHLIGHT) > 0
+					local_player.hook_point.x = received_data.decode_float(22)
+					local_player.hook_point.y = received_data.decode_float(26)
+					local_player.hook_point.z = received_data.decode_float(30)
 				
 				PacketType.CONTROL_GAME_END:
 					var temp_results_file_path := OS.get_cache_dir().path_join(TEMP_RESULTS_FILE_NAME)

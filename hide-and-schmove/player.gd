@@ -22,10 +22,11 @@ var yaw := 0.0
 var pitch := 0.0
 var alive: bool = true:
 	set(x):
+		if alive == true && x == false:
+			pass # TODO: Play caught SFX
 		alive = x
 		if not alive:
 			%Body.get_surface_override_material(0).albedo_color = Color(1.0, 1.0, 1.0, body_alpha)
-			died.emit()
 var is_seeker: bool = false:
 	set(x):
 		is_seeker = x
@@ -43,7 +44,7 @@ var flashlight: bool = false:
 		%Flashlight.visible = x
 
 
-signal died
+signal caught_hider(hider_id: int) # TODO
 
 
 func _ready() -> void:
