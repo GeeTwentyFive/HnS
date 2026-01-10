@@ -2,16 +2,19 @@
 
 [ext_resource type="Script" uid="uid://rd518r7b0vke" path="res://game_manager.gd" id="1_p13vs"]
 
-[node name="GameManager" type="Node"]
-script = ExtResource("1_p13vs")
-
-[node name="Loading_Screen" type="ColorRect" parent="."]
-unique_name_in_owner = true
+[node name="GameManager" type="SubViewportContainer"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+stretch = true
+stretch_shrink = 2
+script = ExtResource("1_p13vs")
+
+[node name="Loading_Screen" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
 color = Color(0, 0, 0, 1)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Loading_Screen"]
@@ -95,37 +98,36 @@ allow_lesser = true
 layout_mode = 2
 text = "Exit"
 
-[node name="Sun" type="Node3D" parent="."]
+[node name="World" type="SubViewport" parent="."]
+unique_name_in_owner = true
+msaa_3d = 3
+size = Vector2i(960, 540)
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="Sun"]
+[node name="Sun" type="Node3D" parent="World"]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="World/Sun"]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)
 shadow_enabled = true
 sky_mode = 1
 
-[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="Sun"]
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="World/Sun"]
 transform = Transform3D(1, 0, 0, 0, 0.017452383, 0.9998477, 0, -0.9998477, 0.017452383, 0, 0, 0)
 shadow_enabled = true
 sky_mode = 1
 
-[node name="DirectionalLight3D3" type="DirectionalLight3D" parent="Sun"]
+[node name="DirectionalLight3D3" type="DirectionalLight3D" parent="World/Sun"]
 transform = Transform3D(1, 0, 0, 0, -0.017452352, 0.9998477, 0, -0.9998477, -0.017452352, 0, 0, 0)
 shadow_enabled = true
 sky_mode = 1
 
-[node name="DirectionalLight3D4" type="DirectionalLight3D" parent="Sun"]
+[node name="DirectionalLight3D4" type="DirectionalLight3D" parent="World/Sun"]
 transform = Transform3D(0.9998477, 7.628689e-10, -0.017452406, 0.017452406, -4.370473e-08, 0.9998477, 0, -1, -4.371139e-08, 0, 0, 0)
 rotation_order = 3
 shadow_enabled = true
 sky_mode = 1
 
-[node name="DirectionalLight3D5" type="DirectionalLight3D" parent="Sun"]
+[node name="DirectionalLight3D5" type="DirectionalLight3D" parent="World/Sun"]
 transform = Transform3D(0.9998477, -7.628689e-10, 0.017452406, -0.017452406, -4.370473e-08, 0.9998477, 0, -1, -4.371139e-08, 0, 0, 0)
 rotation_order = 3
 shadow_enabled = true
 sky_mode = 1
-
-[connection signal="timeout" from="Loading_Screen/VBoxContainer/Players_Connected_Label/Players_Connected_Update_Timer" to="." method="_on_players_connected_update_timer_timeout"]
-[connection signal="pressed" from="Loading_Screen/VBoxContainer/Ready_Button" to="." method="_on_ready_button_pressed"]
-[connection signal="text_submitted" from="Settings_Popup/VBoxContainer/Settings_Name" to="." method="_on_settings_name_text_submitted"]
-[connection signal="value_changed" from="Settings_Popup/VBoxContainer/Settings_Sensitivity" to="." method="_on_settings_sensitivity_value_changed"]
-[connection signal="pressed" from="Settings_Popup/VBoxContainer/Exit_Button" to="." method="_on_exit_button_pressed"]

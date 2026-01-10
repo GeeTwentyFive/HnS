@@ -97,7 +97,7 @@ func LoadMap(map_json: String):
 					map_object["rot"][1],
 					map_object["rot"][2]
 				)
-				add_child(box)
+				%World.add_child(box)
 			
 			"Light":
 				var light := OmniLight3D.new()
@@ -110,7 +110,7 @@ func LoadMap(map_json: String):
 					map_object["pos"][1],
 					map_object["pos"][2]
 				)
-				add_child(light)
+				%World.add_child(light)
 			
 			"Spawn_Hider":
 				hider_spawn = Vector3(
@@ -130,13 +130,13 @@ func LoadMap(map_json: String):
 	#%Players_Connected_Update_Timer.stop()
 	#
 	## Spawn local player
-	#add_child(local_player)
+	#%World.add_child(local_player)
 	#
 	## Spawn remote players
 	#for player_id in sns.states.keys():
 		#if player_id == sns.local_id: continue
 		#players[player_id] = Player.new()
-		#add_child(players[player_id])
+		#%World.add_child(players[player_id])
 	#
 	#%Loading_Screen.visible = false
 	#
@@ -227,7 +227,7 @@ func _process(_delta: float) -> void:
 					
 					if player_id not in remote_players.keys():
 						remote_players[received_data[1]] = Player.new()
-						add_child(remote_players[received_data[1]])
+						%World.add_child(remote_players[received_data[1]])
 					
 					remote_players[player_id].position.x = received_data.decode_float(2)
 					remote_players[player_id].position.y = received_data.decode_float(6)
