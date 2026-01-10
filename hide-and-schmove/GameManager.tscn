@@ -100,8 +100,10 @@ text = "Exit"
 
 [node name="World" type="SubViewport" parent="."]
 unique_name_in_owner = true
+handle_input_locally = false
 msaa_3d = 3
 size = Vector2i(960, 540)
+render_target_update_mode = 4
 
 [node name="Sun" type="Node3D" parent="World"]
 
