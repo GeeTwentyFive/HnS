@@ -61,7 +61,7 @@ func LoadMap(map_json: String):
 		OS.alert("ERROR: Failed to load map")
 		get_tree().quit(1)
 	for map_object in map_data:
-		match map_object["type"].get_basename():
+		match map_object["type"]:
 			"Box":
 				var box_mesh := MeshInstance3D.new()
 				box_mesh.mesh = BoxMesh.new()
@@ -71,11 +71,9 @@ func LoadMap(map_json: String):
 					map_object["scale"][2]
 				)
 				var material := StandardMaterial3D.new()
-				material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_DEPTH_PRE_PASS
 				material.albedo_color.r8 = int(map_object["data"]["Color R"]) # TODO
 				material.albedo_color.g8 = int(map_object["data"]["Color G"])
 				material.albedo_color.b8 = int(map_object["data"]["Color B"])
-				material.albedo_color.a8 = int(map_object["data"]["Color A"])
 				box_mesh.set_surface_override_material(0, material)
 				var collision_shape := CollisionShape3D.new()
 				collision_shape.shape = BoxShape3D.new()
