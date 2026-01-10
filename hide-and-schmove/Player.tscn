@@ -1,6 +1,7 @@
-[gd_scene load_steps=15 format=3 uid="uid://u5ynn5qp2oq2"]
+[gd_scene load_steps=16 format=3 uid="uid://u5ynn5qp2oq2"]
 
 [ext_resource type="Script" uid="uid://cankftc73niri" path="res://player.gd" id="1_xhfnw"]
+[ext_resource type="AudioStream" uid="uid://cioiggb0ib7dv" path="res://Audio/impactMining_004.ogg" id="2_e80uo"]
 [ext_resource type="AudioStream" uid="uid://bp1behgoo61r4" path="res://Audio/impactSoft_medium_000.ogg" id="2_kpjcp"]
 [ext_resource type="AudioStream" uid="uid://xtkscn00pkac" path="res://Audio/slide.ogg" id="3_kne1u"]
 
@@ -52,6 +53,7 @@ axis_lock_angular_z = true
 physics_material_override = SubResource("PhysicsMaterial_xhfnw")
 continuous_cd = true
 script = ExtResource("1_xhfnw")
+is_local_player = null
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
@@ -94,6 +96,12 @@ spot_attenuation = 2.0
 [node name="Hook" type="MeshInstance3D" parent="Body"]
 unique_name_in_owner = true
 mesh = SubResource("ImmediateMesh_xhfnw")
+
+[node name="Caught_Sound" type="AudioStreamPlayer3D" parent="Body"]
+unique_name_in_owner = true
+stream = ExtResource("2_e80uo")
+attenuation_model = 1
+volume_db = -20.0
 
 [node name="Floor_Collider" type="Area3D" parent="."]
 unique_name_in_owner = true

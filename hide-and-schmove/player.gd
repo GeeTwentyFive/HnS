@@ -23,7 +23,7 @@ var pitch := 0.0
 var alive: bool = true:
 	set(x):
 		if alive == true && x == false:
-			pass # TODO: Play caught SFX
+			%Caught_Sound.play()
 		alive = x
 		if not alive:
 			%Body.get_surface_override_material(0).albedo_color = Color(1.0, 1.0, 1.0, body_alpha)
