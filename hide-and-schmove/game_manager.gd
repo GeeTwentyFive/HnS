@@ -164,6 +164,7 @@ func _ready() -> void:
 	server = client.connect_to_host(args[0], PORT, 1)
 	if client.service(CONNECT_TIMEOUT)[0] != ENetConnection.EventType.EVENT_CONNECT:
 		OS.alert("Failed to connect to server (game already in progress?)")
+		get_tree().quit(1)
 	
 	var initial_sync_packet: PackedByteArray
 	initial_sync_packet.resize(1 + 2 + 4*3 + 4 + 4 + 1 + 4*3)

@@ -29,7 +29,7 @@ window/vsync/vsync_mode=0
 
 [editor]
 
-run/main_run_args="-- ::1 TEST_MAP.json"
+run/main_run_args="-- ::1"
 
 [input]
 
