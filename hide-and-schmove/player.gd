@@ -82,7 +82,7 @@ var last_jumped := jumped
 var last_walljumped := walljumped
 @onready var hook_material = StandardMaterial3D.new()
 var last_hooked := (hook_point != Vector3.ZERO)
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	if jumped and not last_jumped:
 		%Jump_Sound.pitch_scale = 1.0
 		%Jump_Sound.play()
