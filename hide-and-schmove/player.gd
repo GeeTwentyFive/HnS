@@ -11,8 +11,12 @@ const HOOK_POINT_SOUND = preload("res://Audio/impactSoft_heavy_000.ogg")
 
 
 # Local vars
-@export var is_local_player: bool = false
-@onready var body_alpha := LOCAL_PLAYER_BODY_TRANSPARENCY if is_local_player else 1.0
+var body_alpha := 1.0
+var is_local_player: bool = false:
+	set(x):
+		is_local_player = x
+		if is_local_player:
+			body_alpha = LOCAL_PLAYER_BODY_TRANSPARENCY
 var sensitivity: float = 0.01
 var pause_input: bool = false
 var move_speed := RUN_SPEED
@@ -44,7 +48,7 @@ var flashlight: bool = false:
 		%Flashlight.visible = x
 
 
-signal caught_hider(hider_id: int) # TODO
+signal caught_hider(hider: Player)
 
 
 func _ready() -> void:
@@ -77,7 +81,7 @@ func _process(_delta: float) -> void:
 var last_jumped := jumped
 var last_walljumped := walljumped
 @onready var hook_material = StandardMaterial3D.new()
-var last_hooked := hooked
+var last_hooked := (hook_point != Vector3.ZERO)
 func _physics_process(delta: float) -> void:
 	if jumped and not last_jumped:
 		%Jump_Sound.pitch_scale = 1.0
@@ -89,13 +93,13 @@ func _physics_process(delta: float) -> void:
 		%Jump_Sound.play()
 	last_walljumped = walljumped
 	
-	if slide_sound_playing:
+	if sliding:
 		if not %Slide_Sound.playing:
 			%Slide_Sound.play()
 	else: %Slide_Sound.stop()
 	
 	%Hook.mesh.clear_surfaces()
-	if hooked:
+	if hook_point != Vector3.ZERO:
 		if is_local_player:
 			apply_central_force(
 				(hook_point - %Hook.global_position).normalized() *
@@ -117,25 +121,18 @@ func _physics_process(delta: float) -> void:
 				func(): hook_point_sound.queue_free()
 			)
 			get_tree().root.add_child(hook_point_sound)
-	last_hooked = hooked
+	last_hooked = (hook_point != Vector3.ZERO)
 	
 	
 	if not is_local_player: return
 	
 	
-	if global_position.y < 0.0:
-		alive = false
-	
-	if not alive:
-		is_seeker = false
-	
 	if is_seeker:
 		for body in %Catch_Collider.get_overlapping_bodies():
 			if body is not Player: continue
 			if body.alive:
-				last_caught_hider = body
+				caught_hider.emit(body)
 				break
-		seek_time += delta
 	
 	var is_on_ground: bool = false
 	for body in %Floor_Collider.get_overlapping_bodies():
@@ -184,18 +181,17 @@ func _physics_process(delta: float) -> void:
 		physics_material_override.friction = 0.0
 		
 		if is_on_ground and linear_velocity.length() > 0.1:
-			slide_sound_playing = true
-		else: slide_sound_playing = false
+			sliding = true
+		else: sliding = false
 	else:
 		physics_material_override.friction = 1.0
-		slide_sound_playing = false
+		sliding = false
 	
-	if Input.is_action_pressed("Hook") and not hooked:
+	if Input.is_action_pressed("Hook") and hook_point == Vector3.ZERO:
 		%Camera_Raycast.force_raycast_update()
 		if %Camera_Raycast.is_colliding():
 			hook_point = %Camera_Raycast.get_collision_point()
-			hooked = true
-	elif not Input.is_action_pressed("Hook"): hooked = false
+	elif not Input.is_action_pressed("Hook"): hook_point = Vector3.ZERO
 	
 	if Input.is_action_just_pressed("Flashlight"):
 		flashlight = not flashlight

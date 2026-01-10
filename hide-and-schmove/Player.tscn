@@ -53,7 +53,6 @@ axis_lock_angular_z = true
 physics_material_override = SubResource("PhysicsMaterial_xhfnw")
 continuous_cd = true
 script = ExtResource("1_xhfnw")
-is_local_player = null
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
