@@ -207,7 +207,6 @@ func _ready() -> void:
 	#
 	#get_tree().paused = false
 
-var game_started := false
 func _process(_delta: float) -> void:
 	var packet_data = client.service()
 	match packet_data[0]: # packet_data == [EventType, ENetPacketPeer, data, channel]
