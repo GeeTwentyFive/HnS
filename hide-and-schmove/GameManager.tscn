@@ -44,11 +44,6 @@ theme_override_font_sizes/font_size = 32
 text = "0"
 horizontal_alignment = 1
 
-[node name="Players_Connected_Update_Timer" type="Timer" parent="Loading_Screen/VBoxContainer/Players_Connected_Label"]
-unique_name_in_owner = true
-process_callback = 0
-wait_time = 0.1
-
 [node name="Padding" type="Label" parent="Loading_Screen/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32

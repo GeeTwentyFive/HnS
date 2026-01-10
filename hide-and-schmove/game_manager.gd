@@ -1,11 +1,13 @@
 extends Node
 
 
-const SETTINGS_PATH = "HnS_settings.json"
+@onready var SETTINGS_PATH := OS.get_cache_dir().path_join("HnS_settings.json")
 const PORT = 55555
 const CONNECT_TIMEOUT = 5000
-const TEMP_RESULTS_FILE_NAME = "_HnS_RESULTS.json"
-@onready var JSON_ARRAY_VIEWER_PATH = "deps/JSONArrayViewer" + ".exe" if (OS.get_name() == "Windows") else ""
+@onready var TEMP_RESULTS_FILE_PATH := OS.get_temp_dir().path_join("_HnS_RESULTS.json")
+@onready var JSON_ARRAY_VIEWER_PATH := "deps/JSONArrayViewer" + ".exe" if (OS.get_name() == "Windows") else ""
+
+const NAME_LENGTH_PACKET_MAX = 64
 
 
 enum PacketType {
@@ -46,13 +48,12 @@ var settings: Dictionary = {
 var client: ENetConnection
 var server: ENetPacketPeer
 
-var hider_spawn := Vector3(0.0, 0.0, 0.0)
+var hider_spawn := Vector3(0.0, 1.0, 0.0)
 var seeker_spawn := Vector3(0.0, 10.0, 0.0)
 
 @onready var local_player := Player.new()
-var map_loaded := false
 var remote_players: Dictionary[int, Player] = {}
-var remote_players_stats: Array[Dictionary] = []
+var remote_players_stats: Dictionary[int, Dictionary] = {}
 
 
 func LoadMap(map_json: String):
@@ -124,22 +125,6 @@ func LoadMap(map_json: String):
 					map_object["pos"][2]
 				)
 
-#func StartGame() -> void:
-	#%Players_Connected_Update_Timer.stop()
-	#
-	## Spawn local player
-	#%World.add_child(local_player)
-	#
-	## Spawn remote players
-	#for player_id in sns.states.keys():
-		#if player_id == sns.local_id: continue
-		#players[player_id] = Player.new()
-		#%World.add_child(players[player_id])
-	#
-	#%Loading_Screen.visible = false
-	#
-	#get_tree().paused = false
-
 func _ready() -> void:
 	get_tree().paused = true
 	
@@ -178,17 +163,17 @@ func _ready() -> void:
 		get_tree().quit(1)
 	server = client.connect_to_host(args[0], PORT, 1)
 	if client.service(CONNECT_TIMEOUT)[0] != ENetConnection.EventType.EVENT_CONNECT:
-		OS.alert("Failed to connect to server")
+		OS.alert("Failed to connect to server (game already in progress?)")
 	
 	var initial_sync_packet: PackedByteArray
-	initial_sync_packet.resize(1 + 1 + 4*3 + 4 + 4 + 1 + 4*3)
+	initial_sync_packet.resize(1 + 2 + 4*3 + 4 + 4 + 1 + 4*3)
 	initial_sync_packet.encode_u8(0, PacketType.PLAYER_SYNC)
-	initial_sync_packet.encode_u8(1, -1)
-	initial_sync_packet.encode_float(2, local_player.position.x)
-	initial_sync_packet.encode_float(6, local_player.position.y)
-	initial_sync_packet.encode_float(10, local_player.position.z)
-	initial_sync_packet.encode_float(14, local_player.yaw)
-	initial_sync_packet.encode_float(18, local_player.pitch)
+	initial_sync_packet.encode_u16(1, -1)
+	initial_sync_packet.encode_float(3, local_player.position.x)
+	initial_sync_packet.encode_float(7, local_player.position.y)
+	initial_sync_packet.encode_float(11, local_player.position.z)
+	initial_sync_packet.encode_float(15, local_player.yaw)
+	initial_sync_packet.encode_float(19, local_player.pitch)
 	var player_state_flags := 0
 	player_state_flags |= (1 if local_player.alive else 0) << 0
 	player_state_flags |= (1 if local_player.is_seeker else 0) << 1
@@ -196,10 +181,10 @@ func _ready() -> void:
 	player_state_flags |= (1 if local_player.walljumped else 0) << 3
 	player_state_flags |= (1 if local_player.sliding else 0) << 4
 	player_state_flags |= (1 if local_player.flashlight else 0) << 5
-	initial_sync_packet.encode_u8(22, player_state_flags)
-	initial_sync_packet.encode_float(23, local_player.hook_point.x)
-	initial_sync_packet.encode_float(27, local_player.hook_point.y)
-	initial_sync_packet.encode_float(31, local_player.hook_point.z)
+	initial_sync_packet.encode_u8(23, player_state_flags)
+	initial_sync_packet.encode_float(24, local_player.hook_point.x)
+	initial_sync_packet.encode_float(28, local_player.hook_point.y)
+	initial_sync_packet.encode_float(32, local_player.hook_point.z)
 	server.send(0, initial_sync_packet, ENetPacketPeer.FLAG_RELIABLE)
 	
 	var set_name_packet: PackedByteArray
@@ -207,25 +192,45 @@ func _ready() -> void:
 	set_name_packet.encode_u8(0, PacketType.PLAYER_SET_NAME)
 	set_name_packet.append_array(local_player.name.to_ascii_buffer())
 	server.send(0, set_name_packet, ENetPacketPeer.FLAG_RELIABLE)
-	
-	%Players_Connected_Update_Timer.start()
 
+#func StartGame() -> void:
+	## Spawn local player
+	#%World.add_child(local_player)
+	#
+	## Spawn remote players
+	#for player_id in sns.states.keys():
+		#if player_id == sns.local_id: continue
+		#players[player_id] = Player.new()
+		#%World.add_child(players[player_id])
+	#
+	#%Loading_Screen.visible = false
+	#
+	#get_tree().paused = false
+
+var game_started := false
 func _process(_delta: float) -> void:
 	var packet_data = client.service()
-	match packet_data[0]:
+	match packet_data[0]: # packet_data == [EventType, ENetPacketPeer, data, channel]
 		ENetConnection.EventType.EVENT_DISCONNECT:
 			OS.alert("Disconnected from server")
 			get_tree().quit(0)
 		
 		ENetConnection.EventType.EVENT_RECEIVE:
 			var received_data: PackedByteArray = packet_data[2]
-			match received_data[0]:
+			
+			if (received_data.size() < 1): return
+			
+			match received_data.decode_u8(0):
 				PacketType.PLAYER_SYNC:
-					var player_id := received_data[1]
+					if (received_data.size() < 35): return
+					
+					var player_id := received_data.decode_u16(1)
 					
 					if player_id not in remote_players.keys():
-						remote_players[received_data[1]] = Player.new()
-						%World.add_child(remote_players[received_data[1]])
+						remote_players[player_id] = Player.new()
+						%World.add_child(remote_players[player_id])
+						
+						%Players_Connected_Label.text = str(remote_players.size())
 					
 					remote_players[player_id].position.x = received_data.decode_float(2)
 					remote_players[player_id].position.y = received_data.decode_float(6)
@@ -244,34 +249,45 @@ func _process(_delta: float) -> void:
 					remote_players[player_id].hook_point.z = received_data.decode_float(31)
 				
 				PacketType.PLAYER_DISCONNECTED:
-					var player_id := received_data[1]
+					if (received_data.size() < 3): return
+					
+					var player_id := received_data.decode_u16(1)
 					
 					remote_players[player_id].queue_free()
 					remote_players.erase(player_id)
+					
+					%Players_Connected_Label.text = str(remote_players.size())
 				
 				PacketType.PLAYER_STATS:
+					if (received_data.size() < 73): return
+					
+					var player_id := received_data.decode_u16(1)
+					
 					var player_name := ""
-					for c in range(64):
-						if received_data[2+c] == 0: break
-						player_name += char(received_data[2+c])
-					remote_players_stats.append({
+					for c in range(NAME_LENGTH_PACKET_MAX):
+						if received_data.decode_u8(3+c) == 0: break
+						player_name += char(received_data.decode_u8(3+c))
+					
+					remote_players_stats[player_id] = {
 						"name": player_name,
-						"seek_time": received_data.decode_float(66),
-						"last_alive_rounds": received_data.decode_float(70),
-						"points": received_data.decode_float(74)
-					})
+						"seek_time": received_data.decode_float(67),
+						"last_alive_rounds": received_data.decode_u8(71),
+						"points": received_data.decode_u8(72)
+					}
 				
 				
 				PacketType.CONTROL_MAP_DATA:
 					received_data.remove_at(0)
+					if (received_data.size() == 0): return
 					LoadMap(received_data.get_string_from_ascii())
-					map_loaded = true
 					%Ready_Button.disabled = false
 				
 				PacketType.CONTROL_GAME_START:
 					get_tree().paused = false
 				
 				PacketType.CONTROL_SET_PLAYER_DATA:
+					if (received_data.size() < 35): return
+					
 					local_player.position.x = received_data.decode_float(1)
 					local_player.position.y = received_data.decode_float(5)
 					local_player.position.z = received_data.decode_float(9)
@@ -289,26 +305,25 @@ func _process(_delta: float) -> void:
 					local_player.hook_point.z = received_data.decode_float(30)
 				
 				PacketType.CONTROL_GAME_END:
-					var temp_results_file_path := OS.get_cache_dir().path_join(TEMP_RESULTS_FILE_NAME)
 					FileAccess.open(
-						temp_results_file_path,
+						TEMP_RESULTS_FILE_PATH,
 						FileAccess.WRITE
-					).store_string(JSON.stringify(remote_players_stats))
-					OS.create_process(JSON_ARRAY_VIEWER_PATH, [temp_results_file_path])
+					).store_string(JSON.stringify(remote_players_stats.values()))
+					OS.create_process(JSON_ARRAY_VIEWER_PATH, [TEMP_RESULTS_FILE_PATH])
 					
 					get_tree().quit(0)
 
 func _physics_process(_delta: float) -> void:
 	# Synchronize local player state
 	var sync_packet: PackedByteArray
-	sync_packet.resize(1 + 1 + 4*3 + 4 + 4 + 1 + 4*3)
+	sync_packet.resize(1 + 2 + 4*3 + 4 + 4 + 1 + 4*3)
 	sync_packet.encode_u8(0, PacketType.PLAYER_SYNC)
-	sync_packet.encode_u8(1, -1)
-	sync_packet.encode_float(2, local_player.position.x)
-	sync_packet.encode_float(6, local_player.position.y)
-	sync_packet.encode_float(10, local_player.position.z)
-	sync_packet.encode_float(14, local_player.yaw)
-	sync_packet.encode_float(18, local_player.pitch)
+	sync_packet.encode_u16(1, -1)
+	sync_packet.encode_float(3, local_player.position.x)
+	sync_packet.encode_float(7, local_player.position.y)
+	sync_packet.encode_float(11, local_player.position.z)
+	sync_packet.encode_float(15, local_player.yaw)
+	sync_packet.encode_float(19, local_player.pitch)
 	var player_state_flags := 0
 	player_state_flags |= (1 if local_player.alive else 0) << 0
 	player_state_flags |= (1 if local_player.is_seeker else 0) << 1
@@ -316,17 +331,17 @@ func _physics_process(_delta: float) -> void:
 	player_state_flags |= (1 if local_player.walljumped else 0) << 3
 	player_state_flags |= (1 if local_player.sliding else 0) << 4
 	player_state_flags |= (1 if local_player.flashlight else 0) << 5
-	sync_packet.encode_u8(22, player_state_flags)
-	sync_packet.encode_float(23, local_player.hook_point.x)
-	sync_packet.encode_float(27, local_player.hook_point.y)
-	sync_packet.encode_float(31, local_player.hook_point.z)
+	sync_packet.encode_u8(23, player_state_flags)
+	sync_packet.encode_float(24, local_player.hook_point.x)
+	sync_packet.encode_float(28, local_player.hook_point.y)
+	sync_packet.encode_float(32, local_player.hook_point.z)
 	server.send(0, sync_packet, 0)
 
 func _on_ready_button_pressed() -> void:
 	var ready_packet: PackedByteArray
 	ready_packet.resize(1)
 	ready_packet.encode_u8(0, PacketType.PLAYER_READY)
-	server.send(0, ready_packet, 0)
+	server.send(0, ready_packet, ENetPacketPeer.FLAG_RELIABLE)
 	%Ready_Button.disabled = true
 
 func _input(event: InputEvent) -> void:
@@ -344,9 +359,6 @@ func _input(event: InputEvent) -> void:
 
 
 #region CALLBACKS
-
-func _on_players_connected_update_timer_timeout() -> void:
-	%Players_Connected_Label.text = str(remote_players.keys().size())
 
 func _on_settings_name_text_submitted(new_text: String) -> void:
 	settings["name"] = new_text
