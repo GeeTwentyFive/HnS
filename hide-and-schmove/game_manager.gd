@@ -204,6 +204,7 @@ func _ready() -> void:
 	set_name_packet.resize(1)
 	set_name_packet.encode_u8(0, PacketType.PLAYER_SET_NAME)
 	set_name_packet.append_array(local_player.name.to_ascii_buffer())
+	set_name_packet.resize(65) # Has to meet max length to be accepted by server
 	zec.send(set_name_packet)
 
 func _process(_delta: float) -> void:
@@ -225,7 +226,7 @@ func _process(_delta: float) -> void:
 					remote_players[player_id] = PLAYER_SCENE.instantiate()
 					%World.add_child(remote_players[player_id])
 					
-					%Players_Connected_Label.text = str(remote_players.size())
+					%Players_Connected_Label.text = str(1 + remote_players.size())
 				
 				remote_players[player_id].position.x = data.decode_float(3)
 				remote_players[player_id].position.y = data.decode_float(7)
@@ -252,7 +253,7 @@ func _process(_delta: float) -> void:
 					remote_players[player_id].queue_free()
 					remote_players.erase(player_id)
 				
-				%Players_Connected_Label.text = str(remote_players.size())
+				%Players_Connected_Label.text = str(1 + remote_players.size())
 			
 			PacketType.PLAYER_STATS:
 				if (data.size() < 73): return
