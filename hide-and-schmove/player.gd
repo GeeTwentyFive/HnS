@@ -126,6 +126,7 @@ func _physics_process(_delta: float) -> void:
 	if is_seeker:
 		for body in %Catch_Collider.get_overlapping_bodies():
 			if body is not Player: continue
+			if body == self: continue
 			if body.alive:
 				caught_hider.emit(body)
 				break

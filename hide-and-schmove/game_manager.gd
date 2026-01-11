@@ -171,7 +171,11 @@ func _ready() -> void:
 	)
 	
 	local_player.caught_hider.connect(func(caught_hider: Player):
-		pass # TODO
+		var hider_caught_packet: PackedByteArray
+		hider_caught_packet.resize(3)
+		hider_caught_packet.encode_u8(0, PacketType.PLAYER_HIDER_CAUGHT)
+		hider_caught_packet.encode_u16(1, remote_players.find_key(caught_hider))
+		zec.send(hider_caught_packet)
 	)
 	
 	var initial_sync_packet: PackedByteArray
@@ -240,8 +244,6 @@ func _process(_delta: float) -> void:
 				remote_players[player_id].hook_point.z = data.decode_float(32)
 			
 			PacketType.PLAYER_DISCONNECTED:
-				print("PLAYER_DISCONNECTED SIZE: " + str(data.size()))
-				print("^ expected: 3")
 				if (data.size() < 3): return
 				
 				var player_id := data.decode_u16(1)
@@ -253,8 +255,6 @@ func _process(_delta: float) -> void:
 				%Players_Connected_Label.text = str(remote_players.size())
 			
 			PacketType.PLAYER_STATS:
-				print("PLAYER_STATS SIZE: " + str(data.size()))
-				print("^ expected: 73")
 				if (data.size() < 73): return
 				
 				var player_id := data.decode_u16(1)
@@ -302,7 +302,6 @@ func _process(_delta: float) -> void:
 				local_player.hook_point.z = data.decode_float(30)
 			
 			PacketType.CONTROL_GAME_END:
-				print("RECEIVED GAME END")
 				FileAccess.open(
 					TEMP_RESULTS_FILE_PATH,
 					FileAccess.WRITE
