@@ -33,6 +33,7 @@ bottom_radius = 0.05
 height = 0.5
 
 [sub_resource type="ImmediateMesh" id="ImmediateMesh_xhfnw"]
+resource_local_to_scene = true
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_xhfnw"]
 height = 0.1
