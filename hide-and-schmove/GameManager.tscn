@@ -136,3 +136,7 @@ shadow_enabled = true
 sky_mode = 1
 
 [connection signal="pressed" from="CanvasLayer/Loading_Screen/VBoxContainer/Ready_Button" to="." method="_on_ready_button_pressed"]
+[connection signal="popup_hide" from="CanvasLayer/Settings_Popup" to="." method="_on_settings_popup_popup_hide"]
+[connection signal="text_submitted" from="CanvasLayer/Settings_Popup/VBoxContainer/Settings_Name" to="." method="_on_settings_name_text_submitted"]
+[connection signal="value_changed" from="CanvasLayer/Settings_Popup/VBoxContainer/Settings_Sensitivity" to="." method="_on_settings_sensitivity_value_changed"]
+[connection signal="pressed" from="CanvasLayer/Settings_Popup/VBoxContainer/Exit_Button" to="." method="_on_exit_button_pressed"]

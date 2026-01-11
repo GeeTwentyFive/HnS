@@ -40,13 +40,13 @@ enum PlayerStateFlags {
 var settings: Dictionary = {
 	"name": "Player",
 	"sensitivity": 0.01
-}:
-	set(x):
-		settings = x
-		FileAccess.open(
-			SETTINGS_PATH,
-			FileAccess.WRITE
-		).store_string(JSON.stringify(settings, "\t"))
+}
+func set_settings_value(key: String, val):
+	settings[key] = val
+	FileAccess.open(
+		SETTINGS_PATH,
+		FileAccess.WRITE
+	).store_string(JSON.stringify(settings, "\t"))
 
 @onready var zec = ZPLENetClient.new()
 
@@ -75,7 +75,6 @@ func LoadMap(map_json: String):
 					map_object["scale"][2]
 				)
 				var material := StandardMaterial3D.new()
-				print(map_object["data"].keys())
 				material.albedo_color.r8 = int(map_object["data"]["Color_R"])
 				material.albedo_color.g8 = int(map_object["data"]["Color_G"])
 				material.albedo_color.b8 = int(map_object["data"]["Color_B"])
@@ -156,11 +155,12 @@ func _ready() -> void:
 	
 	var args := OS.get_cmdline_user_args()
 	if args.is_empty():
-		OS.alert("USAGE: -- <SERVER_IP>")
+		OS.alert("USAGE: -- <SERVER_IP> [PORT]")
 		get_tree().quit(0)
 		return
 	
-	if zec.connect_to(args[0], PORT) != OK:
+	var port: int = int(args[1]) if (args.size() >= 2) else PORT
+	if zec.connect_to(args[0], port) != OK:
 		OS.alert("Failed to connect to server (game already in progress?)")
 		get_tree().quit(1)
 		return
@@ -276,13 +276,10 @@ func _process(_delta: float) -> void:
 				%Ready_Button.disabled = false
 			
 			PacketType.CONTROL_GAME_START:
-				print("GOT TO HERE")
 				%World.add_child(local_player)
-				print("AFTER")
 				%Loading_Screen.visible = false
 			
 			PacketType.CONTROL_SET_PLAYER_STATE:
-				print("RECEIVED SET PLAYER STATE")
 				if (data.size() < 34): return
 				
 				local_player.position.x = data.decode_float(1)
@@ -349,24 +346,27 @@ func _input(event: InputEvent) -> void:
 			KEY_ESCAPE:
 				if not %Settings_Popup.visible:
 					local_player.pause_input = true
+					Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 					%Settings_Name.text = local_player.name
 					%Settings_Sensitivity.set_value_no_signal(local_player.sensitivity)
 					%Settings_Popup.show()
-				else:
-					%Settings_Popup.hide()
-					local_player.pause_input = false
 
 
 #region CALLBACKS
 
 func _on_settings_name_text_submitted(new_text: String) -> void:
-	settings["name"] = new_text
+	set_settings_value("name", new_text)
+	local_player.name = new_text
 
 func _on_settings_sensitivity_value_changed(value: float) -> void:
-	settings["sensitivity"] = value
+	set_settings_value("sensitivity", value)
 	local_player.sensitivity = value
 
 func _on_exit_button_pressed() -> void:
 	get_tree().quit(0)
+
+func _on_settings_popup_popup_hide() -> void:
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	local_player.pause_input = false
 
 #endregion CALLBACKS
