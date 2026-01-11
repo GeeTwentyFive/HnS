@@ -86,7 +86,7 @@ unique_name_in_owner = true
 environment = SubResource("Environment_xhfnw")
 fov = 90.0
 near = 0.01
-far = 10000.0
+far = 1000.0
 
 [node name="Camera_Raycast" type="RayCast3D" parent="Body/Head/Camera3D"]
 unique_name_in_owner = true
@@ -101,8 +101,8 @@ unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)
 visible = false
 shadow_enabled = true
-spot_range = 20.0
-spot_attenuation = 2.0
+spot_range = 40.0
+spot_attenuation = 0.0
 
 [node name="CanvasLayer" type="CanvasLayer" parent="Body/Head/Camera3D"]
 
