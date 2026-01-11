@@ -266,7 +266,7 @@ func _process(_delta: float) -> void:
 					player_name += char(data.decode_u8(3+c))
 				
 				remote_players_stats[player_id] = {
-					"name": player_name,
+					" name ": player_name,
 					"seek_time": data.decode_float(67),
 					"last_alive_rounds": data.decode_u8(71),
 					"points": data.decode_u8(72)
