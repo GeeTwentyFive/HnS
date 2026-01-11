@@ -69,10 +69,16 @@ var last_walljumped := walljumped
 @onready var hook_material = StandardMaterial3D.new()
 var last_hooked := (hook_point != Vector3.ZERO)
 func _physics_process(_delta: float) -> void:
-	if not alive: %Body.get_surface_override_material(0).albedo_color = Color(1.0, 1.0, 1.0, body_alpha)
+	if not alive:
+		%State_Indicator_Border.get_theme_stylebox("panel").border_color = Color(1.0, 1.0, 1.0, 0.05)
+		%Body.get_surface_override_material(0).albedo_color = Color(1.0, 1.0, 1.0, body_alpha)
 	else:
-		if is_seeker: %Body.get_surface_override_material(0).albedo_color = Color(1.0, 0.0, 0.0, body_alpha)
-		else: %Body.get_surface_override_material(0).albedo_color = Color(0.0, 0.0, 1.0, body_alpha)
+		if is_seeker:
+			%State_Indicator_Border.get_theme_stylebox("panel").border_color = Color(1.0, 0.0, 0.0, 0.05)
+			%Body.get_surface_override_material(0).albedo_color = Color(1.0, 0.0, 0.0, body_alpha)
+		else:
+			%State_Indicator_Border.get_theme_stylebox("panel").border_color = Color(0.0, 0.0, 1.0, 0.05)
+			%Body.get_surface_override_material(0).albedo_color = Color(0.0, 0.0, 1.0, body_alpha)
 	
 	if is_seeker != last_is_seeker:
 		%Seeker_Transition_Cooldown_Timer.start()

@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://u5ynn5qp2oq2"]
+[gd_scene load_steps=17 format=3 uid="uid://u5ynn5qp2oq2"]
 
 [ext_resource type="Script" uid="uid://cankftc73niri" path="res://player.gd" id="1_xhfnw"]
 [ext_resource type="AudioStream" uid="uid://cioiggb0ib7dv" path="res://Audio/impactMining_004.ogg" id="2_e80uo"]
@@ -31,6 +31,16 @@ reflected_light_source = 1
 top_radius = 0.05
 bottom_radius = 0.05
 height = 0.5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_e80uo"]
+bg_color = Color(0, 0, 0, 0)
+draw_center = false
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.050980393)
+corner_detail = 1
 
 [sub_resource type="ImmediateMesh" id="ImmediateMesh_xhfnw"]
 resource_local_to_scene = true
@@ -93,6 +103,17 @@ visible = false
 shadow_enabled = true
 spot_range = 20.0
 spot_attenuation = 2.0
+
+[node name="CanvasLayer" type="CanvasLayer" parent="Body/Head/Camera3D"]
+
+[node name="State_Indicator_Border" type="Panel" parent="Body/Head/Camera3D/CanvasLayer"]
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_e80uo")
 
 [node name="Hook" type="MeshInstance3D" parent="Body"]
 unique_name_in_owner = true
