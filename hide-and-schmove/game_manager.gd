@@ -208,9 +208,7 @@ func _process(_delta: float) -> void:
 		
 		match data.decode_u8(0):
 			PacketType.PLAYER_SYNC:
-				print("PLAYER_SYNC SIZE: " + str(data.size()))
-				print("^ expected: 35")
-				if (data.size() < 35): return
+				if (data.size() < 36): return
 				
 				var player_id := data.decode_u16(1)
 				
@@ -220,21 +218,21 @@ func _process(_delta: float) -> void:
 					
 					%Players_Connected_Label.text = str(remote_players.size())
 				
-				remote_players[player_id].position.x = data.decode_float(2)
-				remote_players[player_id].position.y = data.decode_float(6)
-				remote_players[player_id].position.z = data.decode_float(10)
-				remote_players[player_id].yaw = data.decode_float(14)
-				remote_players[player_id].pitch = data.decode_float(18)
-				var player_state_flags := data[22]
+				remote_players[player_id].position.x = data.decode_float(3)
+				remote_players[player_id].position.y = data.decode_float(7)
+				remote_players[player_id].position.z = data.decode_float(11)
+				remote_players[player_id].yaw = data.decode_float(15)
+				remote_players[player_id].pitch = data.decode_float(19)
+				var player_state_flags := data[23]
 				remote_players[player_id].alive = (player_state_flags & PlayerStateFlags.ALIVE) > 0
 				remote_players[player_id].is_seeker = (player_state_flags & PlayerStateFlags.IS_SEEKER) > 0
 				remote_players[player_id].jumped = (player_state_flags & PlayerStateFlags.JUMPED) > 0
 				remote_players[player_id].walljumped = (player_state_flags & PlayerStateFlags.WALLJUMPED) > 0
 				remote_players[player_id].sliding = (player_state_flags & PlayerStateFlags.SLIDING) > 0
 				remote_players[player_id].flashlight = (player_state_flags & PlayerStateFlags.FLASHLIGHT) > 0
-				remote_players[player_id].hook_point.x = data.decode_float(23)
-				remote_players[player_id].hook_point.y = data.decode_float(27)
-				remote_players[player_id].hook_point.z = data.decode_float(31)
+				remote_players[player_id].hook_point.x = data.decode_float(24)
+				remote_players[player_id].hook_point.y = data.decode_float(28)
+				remote_players[player_id].hook_point.z = data.decode_float(32)
 			
 			PacketType.PLAYER_DISCONNECTED:
 				print("PLAYER_DISCONNECTED SIZE: " + str(data.size()))
