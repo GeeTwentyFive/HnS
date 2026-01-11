@@ -10,6 +10,9 @@ const CONNECT_TIMEOUT = 5000
 const NAME_LENGTH_PACKET_MAX = 64
 
 
+const PLAYER_SCENE = preload("res://Player.tscn")
+
+
 enum PacketType {
 	PLAYER_SYNC,
 	PLAYER_SET_NAME,
@@ -20,7 +23,7 @@ enum PacketType {
 	
 	CONTROL_MAP_DATA,
 	CONTROL_GAME_START,
-	CONTROL_SET_PLAYER_DATA,
+	CONTROL_SET_PLAYER_STATE,
 	CONTROL_GAME_END
 }
 
@@ -45,13 +48,12 @@ var settings: Dictionary = {
 			FileAccess.WRITE
 		).store_string(JSON.stringify(settings, "\t"))
 
-var client: ENetConnection
-var server: ENetPacketPeer
+@onready var zec = ZPLENetClient.new()
 
 var hider_spawn := Vector3(0.0, 1.0, 0.0)
 var seeker_spawn := Vector3(0.0, 10.0, 0.0)
 
-@onready var local_player := Player.new()
+@onready var local_player := PLAYER_SCENE.instantiate()
 var remote_players: Dictionary[int, Player] = {}
 var remote_players_stats: Dictionary[int, Dictionary] = {}
 
@@ -61,6 +63,7 @@ func LoadMap(map_json: String):
 	if map_data == null:
 		OS.alert("ERROR: Failed to load map")
 		get_tree().quit(1)
+		return
 	for map_object in map_data:
 		match map_object["type"]:
 			"Box":
@@ -72,9 +75,10 @@ func LoadMap(map_json: String):
 					map_object["scale"][2]
 				)
 				var material := StandardMaterial3D.new()
-				material.albedo_color.r8 = int(map_object["data"]["Color R"]) # TODO
-				material.albedo_color.g8 = int(map_object["data"]["Color G"])
-				material.albedo_color.b8 = int(map_object["data"]["Color B"])
+				print(map_object["data"].keys())
+				material.albedo_color.r8 = int(map_object["data"]["Color_R"])
+				material.albedo_color.g8 = int(map_object["data"]["Color_G"])
+				material.albedo_color.b8 = int(map_object["data"]["Color_B"])
 				box_mesh.set_surface_override_material(0, material)
 				var collision_shape := CollisionShape3D.new()
 				collision_shape.shape = BoxShape3D.new()
@@ -126,8 +130,6 @@ func LoadMap(map_json: String):
 				)
 
 func _ready() -> void:
-	get_tree().paused = true
-	
 	local_player.is_local_player = true
 	
 	# Generate user settings if they don't exist
@@ -156,21 +158,16 @@ func _ready() -> void:
 	if args.is_empty():
 		OS.alert("USAGE: -- <SERVER_IP>")
 		get_tree().quit(0)
+		return
 	
-	#client = ENetConnection.new()
-	#if client.create_host(1, 1) != OK:
-		#OS.alert("Failed to create ENet host")
-		#get_tree().quit(1)
-	#server = client.connect_to_host(args[0], PORT, 1)
-	#if client.service(CONNECT_TIMEOUT)[0] != ENetConnection.EventType.EVENT_CONNECT:
-		#OS.alert("Failed to connect to server (game already in progress?)")
-		#get_tree().quit(1)
-	
-	#var client := ENetMultiplayerPeer.new()
-	#if client.create_client("::1", PORT, 1) != OK:
-		#OS.alert("Failed to connect to server (game already in progress?)")
-		#get_tree().quit(1)
-	#server = client.get_peer(0)
+	if zec.connect_to(args[0], PORT) != OK:
+		OS.alert("Failed to connect to server (game already in progress?)")
+		get_tree().quit(1)
+		return
+	zec.disconnected.connect(func():
+		OS.alert("Disconnected from server")
+		get_tree().quit(0)
+	)
 	
 	var initial_sync_packet: PackedByteArray
 	initial_sync_packet.resize(1 + 2 + 4*3 + 4 + 4 + 1 + 4*3)
@@ -192,132 +189,128 @@ func _ready() -> void:
 	initial_sync_packet.encode_float(24, local_player.hook_point.x)
 	initial_sync_packet.encode_float(28, local_player.hook_point.y)
 	initial_sync_packet.encode_float(32, local_player.hook_point.z)
-	server.send(0, initial_sync_packet, ENetPacketPeer.FLAG_RELIABLE)
+	zec.send(initial_sync_packet)
 	
 	var set_name_packet: PackedByteArray
 	set_name_packet.resize(1)
 	set_name_packet.encode_u8(0, PacketType.PLAYER_SET_NAME)
 	set_name_packet.append_array(local_player.name.to_ascii_buffer())
-	server.send(0, set_name_packet, ENetPacketPeer.FLAG_RELIABLE)
-
-#func StartGame() -> void:
-	## Spawn local player
-	#%World.add_child(local_player)
-	#
-	## Spawn remote players
-	#for player_id in sns.states.keys():
-		#if player_id == sns.local_id: continue
-		#players[player_id] = Player.new()
-		#%World.add_child(players[player_id])
-	#
-	#%Loading_Screen.visible = false
-	#
-	#get_tree().paused = false
+	zec.send(set_name_packet)
 
 func _process(_delta: float) -> void:
-	var packet_data = client.service()
-	match packet_data[0]: # packet_data == [EventType, ENetPacketPeer, data, channel]
-		ENetConnection.EventType.EVENT_DISCONNECT:
-			OS.alert("Disconnected from server")
-			get_tree().quit(0)
+	var _received_data: Array = zec.service()
+	var received_data: Array[PackedByteArray]
+	for data in _received_data:
+		if data is PackedByteArray:
+			received_data.append(data)
+	for data in received_data:
+		if (data.size() < 1): return
 		
-		ENetConnection.EventType.EVENT_RECEIVE:
-			var received_data: PackedByteArray = packet_data[2]
-			
-			if (received_data.size() < 1): return
-			
-			match received_data.decode_u8(0):
-				PacketType.PLAYER_SYNC:
-					if (received_data.size() < 35): return
-					
-					var player_id := received_data.decode_u16(1)
-					
-					if player_id not in remote_players.keys():
-						remote_players[player_id] = Player.new()
-						%World.add_child(remote_players[player_id])
-						
-						%Players_Connected_Label.text = str(remote_players.size())
-					
-					remote_players[player_id].position.x = received_data.decode_float(2)
-					remote_players[player_id].position.y = received_data.decode_float(6)
-					remote_players[player_id].position.z = received_data.decode_float(10)
-					remote_players[player_id].yaw = received_data.decode_float(14)
-					remote_players[player_id].pitch = received_data.decode_float(18)
-					var player_state_flags := received_data[22]
-					remote_players[player_id].alive = (player_state_flags & PlayerStateFlags.ALIVE) > 0
-					remote_players[player_id].is_seeker = (player_state_flags & PlayerStateFlags.IS_SEEKER) > 0
-					remote_players[player_id].jumped = (player_state_flags & PlayerStateFlags.JUMPED) > 0
-					remote_players[player_id].walljumped = (player_state_flags & PlayerStateFlags.WALLJUMPED) > 0
-					remote_players[player_id].sliding = (player_state_flags & PlayerStateFlags.SLIDING) > 0
-					remote_players[player_id].flashlight = (player_state_flags & PlayerStateFlags.FLASHLIGHT) > 0
-					remote_players[player_id].hook_point.x = received_data.decode_float(23)
-					remote_players[player_id].hook_point.y = received_data.decode_float(27)
-					remote_players[player_id].hook_point.z = received_data.decode_float(31)
+		match data.decode_u8(0):
+			PacketType.PLAYER_SYNC:
+				print("PLAYER_SYNC SIZE: " + str(data.size()))
+				print("^ expected: 35")
+				if (data.size() < 35): return
 				
-				PacketType.PLAYER_DISCONNECTED:
-					if (received_data.size() < 3): return
-					
-					var player_id := received_data.decode_u16(1)
-					
-					remote_players[player_id].queue_free()
-					remote_players.erase(player_id)
+				var player_id := data.decode_u16(1)
+				
+				if player_id not in remote_players.keys():
+					remote_players[player_id] = PLAYER_SCENE.instantiate()
+					%World.add_child(remote_players[player_id])
 					
 					%Players_Connected_Label.text = str(remote_players.size())
 				
-				PacketType.PLAYER_STATS:
-					if (received_data.size() < 73): return
-					
-					var player_id := received_data.decode_u16(1)
-					
-					var player_name := ""
-					for c in range(NAME_LENGTH_PACKET_MAX):
-						if received_data.decode_u8(3+c) == 0: break
-						player_name += char(received_data.decode_u8(3+c))
-					
-					remote_players_stats[player_id] = {
-						"name": player_name,
-						"seek_time": received_data.decode_float(67),
-						"last_alive_rounds": received_data.decode_u8(71),
-						"points": received_data.decode_u8(72)
-					}
+				remote_players[player_id].position.x = data.decode_float(2)
+				remote_players[player_id].position.y = data.decode_float(6)
+				remote_players[player_id].position.z = data.decode_float(10)
+				remote_players[player_id].yaw = data.decode_float(14)
+				remote_players[player_id].pitch = data.decode_float(18)
+				var player_state_flags := data[22]
+				remote_players[player_id].alive = (player_state_flags & PlayerStateFlags.ALIVE) > 0
+				remote_players[player_id].is_seeker = (player_state_flags & PlayerStateFlags.IS_SEEKER) > 0
+				remote_players[player_id].jumped = (player_state_flags & PlayerStateFlags.JUMPED) > 0
+				remote_players[player_id].walljumped = (player_state_flags & PlayerStateFlags.WALLJUMPED) > 0
+				remote_players[player_id].sliding = (player_state_flags & PlayerStateFlags.SLIDING) > 0
+				remote_players[player_id].flashlight = (player_state_flags & PlayerStateFlags.FLASHLIGHT) > 0
+				remote_players[player_id].hook_point.x = data.decode_float(23)
+				remote_players[player_id].hook_point.y = data.decode_float(27)
+				remote_players[player_id].hook_point.z = data.decode_float(31)
+			
+			PacketType.PLAYER_DISCONNECTED:
+				print("PLAYER_DISCONNECTED SIZE: " + str(data.size()))
+				print("^ expected: 3")
+				if (data.size() < 3): return
 				
+				var player_id := data.decode_u16(1)
 				
-				PacketType.CONTROL_MAP_DATA:
-					received_data.remove_at(0)
-					if (received_data.size() == 0): return
-					LoadMap(received_data.get_string_from_ascii())
-					%Ready_Button.disabled = false
+				if remote_players.has(player_id):
+					remote_players[player_id].queue_free()
+					remote_players.erase(player_id)
 				
-				PacketType.CONTROL_GAME_START:
-					get_tree().paused = false
+				%Players_Connected_Label.text = str(remote_players.size())
+			
+			PacketType.PLAYER_STATS:
+				print("PLAYER_STATS SIZE: " + str(data.size()))
+				print("^ expected: 73")
+				if (data.size() < 73): return
 				
-				PacketType.CONTROL_SET_PLAYER_DATA:
-					if (received_data.size() < 35): return
-					
-					local_player.position.x = received_data.decode_float(1)
-					local_player.position.y = received_data.decode_float(5)
-					local_player.position.z = received_data.decode_float(9)
-					local_player.yaw = received_data.decode_float(13)
-					local_player.pitch = received_data.decode_float(17)
-					var player_state_flags := received_data[21]
-					local_player.alive = (player_state_flags & PlayerStateFlags.ALIVE) > 0
-					local_player.is_seeker = (player_state_flags & PlayerStateFlags.IS_SEEKER) > 0
-					local_player.jumped = (player_state_flags & PlayerStateFlags.JUMPED) > 0
-					local_player.walljumped = (player_state_flags & PlayerStateFlags.WALLJUMPED) > 0
-					local_player.sliding = (player_state_flags & PlayerStateFlags.SLIDING) > 0
-					local_player.flashlight = (player_state_flags & PlayerStateFlags.FLASHLIGHT) > 0
-					local_player.hook_point.x = received_data.decode_float(22)
-					local_player.hook_point.y = received_data.decode_float(26)
-					local_player.hook_point.z = received_data.decode_float(30)
+				var player_id := data.decode_u16(1)
 				
-				PacketType.CONTROL_GAME_END:
-					FileAccess.open(
-						TEMP_RESULTS_FILE_PATH,
-						FileAccess.WRITE
-					).store_string(JSON.stringify(remote_players_stats.values()))
-					OS.create_process(JSON_ARRAY_VIEWER_PATH, [TEMP_RESULTS_FILE_PATH])
-					
-					get_tree().quit(0)
+				var player_name := ""
+				for c in range(NAME_LENGTH_PACKET_MAX):
+					if data.decode_u8(3+c) == 0: break
+					player_name += char(data.decode_u8(3+c))
+				
+				remote_players_stats[player_id] = {
+					"name": player_name,
+					"seek_time": data.decode_float(67),
+					"last_alive_rounds": data.decode_u8(71),
+					"points": data.decode_u8(72)
+				}
+			
+			
+			PacketType.CONTROL_MAP_DATA:
+				data.remove_at(0)
+				if (data.size() == 0): return
+				LoadMap(data.get_string_from_ascii())
+				%Ready_Button.disabled = false
+			
+			PacketType.CONTROL_GAME_START:
+				print("GOT TO HERE")
+				%World.add_child(local_player)
+				print("AFTER")
+				%Loading_Screen.visible = false
+			
+			PacketType.CONTROL_SET_PLAYER_STATE:
+				print("RECEIVED SET PLAYER STATE")
+				if (data.size() < 34): return
+				
+				local_player.position.x = data.decode_float(1)
+				local_player.position.y = data.decode_float(5)
+				local_player.position.z = data.decode_float(9)
+				local_player.yaw = data.decode_float(13)
+				local_player.pitch = data.decode_float(17)
+				var player_state_flags := data[21]
+				local_player.alive = (player_state_flags & PlayerStateFlags.ALIVE) > 0
+				local_player.is_seeker = (player_state_flags & PlayerStateFlags.IS_SEEKER) > 0
+				local_player.jumped = (player_state_flags & PlayerStateFlags.JUMPED) > 0
+				local_player.walljumped = (player_state_flags & PlayerStateFlags.WALLJUMPED) > 0
+				local_player.sliding = (player_state_flags & PlayerStateFlags.SLIDING) > 0
+				local_player.flashlight = (player_state_flags & PlayerStateFlags.FLASHLIGHT) > 0
+				local_player.hook_point.x = data.decode_float(22)
+				local_player.hook_point.y = data.decode_float(26)
+				local_player.hook_point.z = data.decode_float(30)
+			
+			PacketType.CONTROL_GAME_END:
+				print("RECEIVED GAME END")
+				FileAccess.open(
+					TEMP_RESULTS_FILE_PATH,
+					FileAccess.WRITE
+				).store_string(JSON.stringify(remote_players_stats.values()))
+				OS.create_process(JSON_ARRAY_VIEWER_PATH, [TEMP_RESULTS_FILE_PATH])
+				
+				get_tree().quit(0)
+				return
 
 func _physics_process(_delta: float) -> void:
 	# Synchronize local player state
@@ -341,13 +334,13 @@ func _physics_process(_delta: float) -> void:
 	sync_packet.encode_float(24, local_player.hook_point.x)
 	sync_packet.encode_float(28, local_player.hook_point.y)
 	sync_packet.encode_float(32, local_player.hook_point.z)
-	server.send(0, sync_packet, 0)
+	zec.send(sync_packet, false)
 
 func _on_ready_button_pressed() -> void:
 	var ready_packet: PackedByteArray
 	ready_packet.resize(1)
 	ready_packet.encode_u8(0, PacketType.PLAYER_READY)
-	server.send(0, ready_packet, ENetPacketPeer.FLAG_RELIABLE)
+	zec.send(ready_packet)
 	%Ready_Button.disabled = true
 
 func _input(event: InputEvent) -> void:

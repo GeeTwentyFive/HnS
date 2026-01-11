@@ -1,9 +1,9 @@
 [
 	{
 		"data": {
-			"Color B": 128.0,
-			"Color G": 128.0,
-			"Color R": 128.0
+			"Color_B": 128.0,
+			"Color_G": 128.0,
+			"Color_R": 128.0
 		},
 		"pos": [
 			0.0,
@@ -24,9 +24,9 @@
 	},
 	{
 		"data": {
-			"Color B": 255.0,
-			"Color G": 0.0,
-			"Color R": 0.0
+			"Color_B": 255.0,
+			"Color_G": 0.0,
+			"Color_R": 0.0
 		},
 		"pos": [
 			4.40000009536743,
@@ -47,9 +47,9 @@
 	},
 	{
 		"data": {
-			"Color B": 0.0,
-			"Color G": 0.0,
-			"Color R": 255.0
+			"Color_B": 0.0,
+			"Color_G": 0.0,
+			"Color_R": 255.0
 		},
 		"pos": [
 			-4.40000009536743,
@@ -70,9 +70,9 @@
 	},
 	{
 		"data": {
-			"Color B": 128.0,
-			"Color G": 128.0,
-			"Color R": 128.0
+			"Color_B": 128.0,
+			"Color_G": 128.0,
+			"Color_R": 128.0
 		},
 		"pos": [
 			3.0,
@@ -93,9 +93,9 @@
 	},
 	{
 		"data": {
-			"Color B": 128.0,
-			"Color G": 128.0,
-			"Color R": 128.0
+			"Color_B": 128.0,
+			"Color_G": 128.0,
+			"Color_R": 128.0
 		},
 		"pos": [
 			5.0,
@@ -116,9 +116,9 @@
 	},
 	{
 		"data": {
-			"Color B": 128.0,
-			"Color G": 128.0,
-			"Color R": 128.0
+			"Color_B": 128.0,
+			"Color_G": 128.0,
+			"Color_R": 128.0
 		},
 		"pos": [
 			3.0,
@@ -139,9 +139,9 @@
 	},
 	{
 		"data": {
-			"Color B": 128.0,
-			"Color G": 128.0,
-			"Color R": 128.0
+			"Color_B": 128.0,
+			"Color_G": 128.0,
+			"Color_R": 128.0
 		},
 		"pos": [
 			-5.0,
@@ -162,9 +162,9 @@
 	},
 	{
 		"data": {
-			"Color B": 128.0,
-			"Color G": 128.0,
-			"Color R": 128.0
+			"Color_B": 128.0,
+			"Color_G": 128.0,
+			"Color_R": 128.0
 		},
 		"pos": [
 			-3.0,
@@ -185,9 +185,9 @@
 	},
 	{
 		"data": {
-			"Color B": 128.0,
-			"Color G": 128.0,
-			"Color R": 128.0
+			"Color_B": 128.0,
+			"Color_G": 128.0,
+			"Color_R": 128.0
 		},
 		"pos": [
 			-3.0,

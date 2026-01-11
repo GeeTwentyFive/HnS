@@ -12,11 +12,7 @@ const HOOK_POINT_SOUND = preload("res://Audio/impactSoft_heavy_000.ogg")
 
 # Local vars
 var body_alpha := 1.0
-var is_local_player: bool = false:
-	set(x):
-		is_local_player = x
-		if is_local_player:
-			body_alpha = LOCAL_PLAYER_BODY_TRANSPARENCY
+var is_local_player: bool = false
 var sensitivity: float = 0.01
 var pause_input: bool = false
 var move_speed := RUN_SPEED
@@ -24,28 +20,13 @@ var move_speed := RUN_SPEED
 # Networked vars
 var yaw := 0.0
 var pitch := 0.0
-var alive: bool = true:
-	set(x):
-		if alive == true && x == false:
-			%Caught_Sound.play()
-		alive = x
-		if not alive:
-			%Body.get_surface_override_material(0).albedo_color = Color(1.0, 1.0, 1.0, body_alpha)
-var is_seeker: bool = false:
-	set(x):
-		is_seeker = x
-		if is_seeker:
-			%Body.get_surface_override_material(0).albedo_color = Color(1.0, 0.0, 0.0, body_alpha)
-		else:
-			%Body.get_surface_override_material(0).albedo_color = Color(0.0, 0.0, 1.0, body_alpha)
+var alive: bool = true
+var is_seeker: bool = false
 var jumped := false
 var walljumped := false
 var sliding := false
 var hook_point := Vector3.ZERO
-var flashlight: bool = false:
-	set(x):
-		flashlight = x
-		%Flashlight.visible = x
+var flashlight: bool = false
 
 
 signal caught_hider(hider: Player)
@@ -54,12 +35,15 @@ signal caught_hider(hider: Player)
 func _ready() -> void:
 	if not is_local_player: return
 	
+	%Camera3D.make_current()
+	
 	Input.use_accumulated_input = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	
 	var material: StandardMaterial3D = %Body.get_surface_override_material(0)
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_DEPTH_PRE_PASS
-	material.albedo_color.a = LOCAL_PLAYER_BODY_TRANSPARENCY
+	
+	body_alpha = LOCAL_PLAYER_BODY_TRANSPARENCY
 
 
 func _input(event: InputEvent) -> void:
@@ -78,11 +62,21 @@ func _process(_delta: float) -> void:
 	%Head.rotate_object_local(Vector3.RIGHT, -pitch)
 
 
+var last_alive := alive
 var last_jumped := jumped
 var last_walljumped := walljumped
 @onready var hook_material = StandardMaterial3D.new()
 var last_hooked := (hook_point != Vector3.ZERO)
 func _physics_process(_delta: float) -> void:
+	if not alive: %Body.get_surface_override_material(0).albedo_color = Color(1.0, 1.0, 1.0, body_alpha)
+	else:
+		if is_seeker: %Body.get_surface_override_material(0).albedo_color = Color(1.0, 0.0, 0.0, body_alpha)
+		else: %Body.get_surface_override_material(0).albedo_color = Color(0.0, 0.0, 1.0, body_alpha)
+	
+	if not alive and last_alive:
+		%Caught_Sound.play()
+	last_alive = alive
+	
 	if jumped and not last_jumped:
 		%Jump_Sound.pitch_scale = 1.0
 		%Jump_Sound.play()
@@ -122,6 +116,8 @@ func _physics_process(_delta: float) -> void:
 			)
 			get_tree().root.add_child(hook_point_sound)
 	last_hooked = (hook_point != Vector3.ZERO)
+	
+	%Flashlight.visible = flashlight
 	
 	
 	if not is_local_player: return

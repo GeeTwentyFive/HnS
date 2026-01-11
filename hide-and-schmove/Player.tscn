@@ -71,6 +71,7 @@ mesh = SubResource("SphereMesh_kne1u")
 skeleton = NodePath("../../CollisionShape3D")
 
 [node name="Camera3D" type="Camera3D" parent="Body/Head"]
+unique_name_in_owner = true
 environment = SubResource("Environment_xhfnw")
 fov = 90.0
 near = 0.01

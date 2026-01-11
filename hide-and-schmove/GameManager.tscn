@@ -12,12 +12,18 @@ stretch = true
 stretch_shrink = 2
 script = ExtResource("1_p13vs")
 
-[node name="Loading_Screen" type="ColorRect" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Loading_Screen" type="ColorRect" parent="CanvasLayer"]
 unique_name_in_owner = true
-layout_mode = 2
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 color = Color(0, 0, 0, 1)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Loading_Screen"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Loading_Screen"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -31,24 +37,24 @@ offset_bottom = 25.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Label" type="Label" parent="Loading_Screen/VBoxContainer"]
+[node name="Label" type="Label" parent="CanvasLayer/Loading_Screen/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Players connected:"
 horizontal_alignment = 1
 
-[node name="Players_Connected_Label" type="Label" parent="Loading_Screen/VBoxContainer"]
+[node name="Players_Connected_Label" type="Label" parent="CanvasLayer/Loading_Screen/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "0"
 horizontal_alignment = 1
 
-[node name="Padding" type="Label" parent="Loading_Screen/VBoxContainer"]
+[node name="Padding" type="Label" parent="CanvasLayer/Loading_Screen/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 
-[node name="Ready_Button" type="Button" parent="Loading_Screen/VBoxContainer"]
+[node name="Ready_Button" type="Button" parent="CanvasLayer/Loading_Screen/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
@@ -56,40 +62,40 @@ theme_override_font_sizes/font_size = 32
 disabled = true
 text = "Ready"
 
-[node name="Settings_Popup" type="PopupPanel" parent="."]
+[node name="Settings_Popup" type="PopupPanel" parent="CanvasLayer"]
 unique_name_in_owner = true
 oversampling_override = 1.0
 initial_position = 2
 size = Vector2i(163, 163)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Settings_Popup"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Settings_Popup"]
 offset_left = 4.0
 offset_top = 4.0
 offset_right = 159.0
 offset_bottom = 159.0
 
-[node name="Label_Name" type="Label" parent="Settings_Popup/VBoxContainer"]
+[node name="Label_Name" type="Label" parent="CanvasLayer/Settings_Popup/VBoxContainer"]
 layout_mode = 2
 text = "Name"
 horizontal_alignment = 1
 
-[node name="Settings_Name" type="LineEdit" parent="Settings_Popup/VBoxContainer"]
+[node name="Settings_Name" type="LineEdit" parent="CanvasLayer/Settings_Popup/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="Label_Sensitivity" type="Label" parent="Settings_Popup/VBoxContainer"]
+[node name="Label_Sensitivity" type="Label" parent="CanvasLayer/Settings_Popup/VBoxContainer"]
 layout_mode = 2
 text = "Sensitivity"
 horizontal_alignment = 1
 
-[node name="Settings_Sensitivity" type="SpinBox" parent="Settings_Popup/VBoxContainer"]
+[node name="Settings_Sensitivity" type="SpinBox" parent="CanvasLayer/Settings_Popup/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 step = -1.0
 allow_greater = true
 allow_lesser = true
 
-[node name="Exit_Button" type="Button" parent="Settings_Popup/VBoxContainer"]
+[node name="Exit_Button" type="Button" parent="CanvasLayer/Settings_Popup/VBoxContainer"]
 layout_mode = 2
 text = "Exit"
 
@@ -128,3 +134,5 @@ transform = Transform3D(0.9998477, -7.628689e-10, 0.017452406, -0.017452406, -4.
 rotation_order = 3
 shadow_enabled = true
 sky_mode = 1
+
+[connection signal="pressed" from="CanvasLayer/Loading_Screen/VBoxContainer/Ready_Button" to="." method="_on_ready_button_pressed"]
