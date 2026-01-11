@@ -103,6 +103,7 @@ text = "Exit"
 unique_name_in_owner = true
 handle_input_locally = false
 msaa_3d = 3
+audio_listener_enable_3d = true
 size = Vector2i(960, 540)
 render_target_update_mode = 4
 
