@@ -5,7 +5,7 @@ extends Node
 const PORT = 55555
 const CONNECT_TIMEOUT = 5000
 @onready var TEMP_RESULTS_FILE_PATH := OS.get_temp_dir().path_join("_HnS_RESULTS.json")
-@onready var JSON_ARRAY_VIEWER_PATH := "deps/JSONArrayViewer" + ".exe" if (OS.get_name() == "Windows") else ""
+@onready var JSON_ARRAY_VIEWER_PATH := "JSONArrayViewer" + ".exe" if (OS.get_name() == "Windows") else ""
 
 const NAME_LENGTH_PACKET_MAX = 64
 
