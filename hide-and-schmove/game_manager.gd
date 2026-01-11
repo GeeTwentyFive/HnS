@@ -269,7 +269,7 @@ func _process(_delta: float) -> void:
 					" name ": player_name,
 					"seek_time": data.decode_float(67),
 					"last_alive_rounds": data.decode_u8(71),
-					"points": data.decode_u8(72)
+					"| points |": data.decode_u8(72)
 				}
 			
 			

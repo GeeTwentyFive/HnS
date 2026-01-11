@@ -20,7 +20,11 @@ var move_speed := RUN_SPEED
 # Networked vars
 var yaw := 0.0
 var pitch := 0.0
-var alive: bool = true
+var alive: bool = true:
+	set(x):
+		if not alive and x:
+			%Caught_Sound.play()
+		alive = x
 var is_seeker: bool = false
 var jumped := false
 var walljumped := false
@@ -62,7 +66,6 @@ func _process(_delta: float) -> void:
 	%Head.rotate_object_local(Vector3.RIGHT, -pitch)
 
 
-var last_alive := alive
 var last_is_seeker := is_seeker
 var last_jumped := jumped
 var last_walljumped := walljumped
@@ -83,10 +86,6 @@ func _physics_process(_delta: float) -> void:
 	if is_seeker != last_is_seeker:
 		%Seeker_Transition_Cooldown_Timer.start()
 	last_is_seeker = is_seeker
-	
-	if not alive and last_alive:
-		%Caught_Sound.play()
-	last_alive = alive
 	
 	if jumped and not last_jumped:
 		%Jump_Sound.pitch_scale = 1.0
