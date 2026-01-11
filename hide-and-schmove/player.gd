@@ -63,6 +63,7 @@ func _process(_delta: float) -> void:
 
 
 var last_alive := alive
+var last_is_seeker := is_seeker
 var last_jumped := jumped
 var last_walljumped := walljumped
 @onready var hook_material = StandardMaterial3D.new()
@@ -72,6 +73,10 @@ func _physics_process(_delta: float) -> void:
 	else:
 		if is_seeker: %Body.get_surface_override_material(0).albedo_color = Color(1.0, 0.0, 0.0, body_alpha)
 		else: %Body.get_surface_override_material(0).albedo_color = Color(0.0, 0.0, 1.0, body_alpha)
+	
+	if is_seeker != last_is_seeker:
+		%Seeker_Transition_Cooldown_Timer.start()
+	last_is_seeker = is_seeker
 	
 	if not alive and last_alive:
 		%Caught_Sound.play()
@@ -123,7 +128,7 @@ func _physics_process(_delta: float) -> void:
 	if not is_local_player: return
 	
 	
-	if is_seeker:
+	if is_seeker and %Seeker_Transition_Cooldown_Timer.is_stopped():
 		for body in %Catch_Collider.get_overlapping_bodies():
 			if body is not Player: continue
 			if body == self: continue
