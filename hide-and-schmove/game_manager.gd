@@ -165,8 +165,13 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 	zec.disconnected.connect(func():
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		OS.alert("Disconnected from server")
 		get_tree().quit(0)
+	)
+	
+	local_player.caught_hider.connect(func(caught_hider: Player):
+		pass # TODO
 	)
 	
 	var initial_sync_packet: PackedByteArray
