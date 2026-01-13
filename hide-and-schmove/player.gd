@@ -163,10 +163,12 @@ func _physics_process(_delta: float) -> void:
 	)
 	if movement_direction:
 		movement_direction = movement_direction.rotated(yaw)
-		apply_central_force(
-			Vector3(movement_direction.x, 0.0, movement_direction.y) *
-			move_speed
-		)
+		
+		if is_on_ground:
+			apply_central_force(
+				Vector3(movement_direction.x, 0.0, movement_direction.y) *
+				move_speed
+			)
 	
 	jumped = false
 	walljumped = false
