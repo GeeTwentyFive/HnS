@@ -31,5 +31,4 @@ https://github.com/GeeTwentyFive/GodotZPLENetClient
 
 - Server: https://github.com/GeeTwentyFive/HnSServer
 - Map editor: https://github.com/GeeTwentyFive/HnSEditor
-- Launcher: https://github.com/GeeTwentyFive/HnSLauncher
 - Game end scoreboard: https://github.com/GeeTwentyFive/JSONArrayViewer
